@@ -1,0 +1,1779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MN Lobbyist Registration Form Filler</title>
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
+        header { background: #003366; color: white; padding: 20px; margin-bottom: 20px; }
+        header h1 { font-size: 1.5em; }
+
+        .sync-bar { background: #e8f4f8; border: 1px solid #b8d4e3; padding: 12px 20px; border-radius: 6px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .sync-bar button { background: #0088cc; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; }
+        .sync-bar button:hover { background: #006699; }
+        #syncStatus { font-size: 0.9em; color: #666; }
+
+        .tabs { display: flex; gap: 5px; margin-bottom: 0; }
+        .tab { padding: 12px 24px; background: #ddd; border: none; cursor: pointer; border-radius: 6px 6px 0 0; }
+        .tab.active { background: #003366; color: white; }
+        .tab-content { display: none; background: white; padding: 25px; border-radius: 0 6px 6px 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .tab-content.active { display: block; }
+
+        h2 { color: #003366; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        h3 { margin: 20px 0 10px; color: #444; }
+
+        .form-row { display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; }
+        .form-group { flex: 1; min-width: 200px; }
+        .form-group.full { flex-basis: 100%; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.9em; color: #555; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 1em; }
+
+        button { padding: 10px 20px; background: #003366; color: white; border: none; border-radius: 4px; cursor: pointer; margin-right: 10px; margin-top: 10px; }
+        button:hover { background: #004488; }
+        button.secondary { background: #666; }
+        button.danger { background: #c0392b; }
+        button.success { background: #27ae60; }
+
+        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; background: #f9f9f9; border: 1px solid #eee; border-radius: 4px; margin-bottom: 8px; }
+        .list-item h4 { margin: 0 0 4px; }
+        .list-item p { margin: 0; font-size: 0.85em; color: #666; }
+        .list-item button { margin: 0 0 0 8px; padding: 6px 12px; font-size: 0.85em; }
+
+        .reg-badge { background: #003366; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.75em; margin-right: 8px; }
+        .cfb-badge { background: #0088cc; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.7em; margin-left: 5px; }
+
+        .empty { text-align: center; padding: 30px; color: #888; }
+        .search-box { margin-bottom: 15px; }
+        .search-box input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
+
+        .category-table { width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 0.9em; }
+        .category-table th { background: #003366; color: white; padding: 8px; text-align: center; font-size: 0.8em; }
+        .category-table th:first-child { text-align: left; }
+        .category-table td { padding: 6px 8px; border-bottom: 1px solid #eee; }
+        .category-table td:not(:first-child) { text-align: center; }
+        .category-table tr:hover { background: #f5f5f5; }
+        .category-table input[type="checkbox"] { width: 16px; height: 16px; }
+
+        .search-dropdown { position: relative; }
+        .search-dropdown input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 1em; }
+        .search-dropdown-list { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #ddd; border-top: none; border-radius: 0 0 4px 4px; max-height: 200px; overflow-y: auto; z-index: 100; display: none; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .search-dropdown-list.visible { display: block; }
+        .search-dropdown-item { padding: 10px 12px; cursor: pointer; border-bottom: 1px solid #eee; }
+        .search-dropdown-item:hover { background: #f0f7ff; }
+        .search-dropdown-item:last-child { border-bottom: none; }
+        .search-dropdown-item small { color: #666; }
+        .selected-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: #e8f4f8; border: 1px solid #b8d4e3; border-radius: 4px; margin-top: 8px; }
+        .selected-item button { background: #c0392b; padding: 4px 10px; margin: 0; font-size: 0.85em; }
+
+        .select-list { max-height: 600px; overflow-y: auto; border: 1px solid #ddd; border-radius: 4px; padding: 10px; background: #fafafa; }
+        .select-item { padding: 15px; background: white; border: 1px solid #eee; border-radius: 4px; margin-bottom: 10px; }
+        .select-item-header { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+        .select-item-header input[type="checkbox"] { width: 20px; height: 20px; flex-shrink: 0; }
+        .select-item-options { margin-left: 32px; padding: 15px; background: #f5f5f5; border-radius: 4px; display: none; }
+        .select-item-options.visible { display: block; }
+
+        .reporting-section { margin-bottom: 15px; padding: 10px; background: white; border-radius: 4px; border: 1px solid #ddd; }
+        .reporting-section label { display: block; margin-bottom: 8px; font-weight: 600; }
+        .reporting-section select { width: 100%; max-width: 400px; padding: 8px; margin-top: 5px; }
+        .reporting-section .help-text { font-size: 0.85em; color: #666; margin-top: 5px; }
+
+        .status { padding: 12px; border-radius: 4px; margin-bottom: 15px; }
+        .status.success { background: #d4edda; color: #155724; }
+        .status.error { background: #f8d7da; color: #721c24; }
+        .status.info { background: #cce5ff; color: #004085; }
+
+        .generated-forms { margin-top: 20px; }
+        .generated-form-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 15px; background: #d4edda; border: 1px solid #c3e6cb; border-radius: 4px; margin-bottom: 8px; }
+        .generated-form-item button { background: #28a745; margin: 0; }
+        .generated-form-item button:hover { background: #218838; }
+
+        .officer-row { display: flex; gap: 10px; margin-bottom: 8px; align-items: end; }
+        .officer-row input { flex: 1; }
+        .officer-row button { margin: 0; padding: 8px 12px; }
+    </style>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="loginScreen" style="position:fixed;top:0;left:0;right:0;bottom:0;background:#003366;display:flex;align-items:center;justify-content:center;z-index:1000;">
+        <div style="background:white;padding:40px;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,0.3);text-align:center;max-width:400px;width:90%;">
+            <h1 style="color:#003366;margin-bottom:10px;font-size:1.5em;">Minnesota Lobbyist Registration</h1>
+            <p style="color:#666;margin-bottom:30px;">Please log in to continue</p>
+            <form id="loginForm">
+                <div style="margin-bottom:15px;text-align:left;">
+                    <label style="display:block;margin-bottom:5px;font-weight:600;color:#555;">Username</label>
+                    <input type="text" id="loginUsername" style="width:100%;padding:12px;border:1px solid #ddd;border-radius:4px;font-size:1em;" required>
+                </div>
+                <div style="margin-bottom:20px;text-align:left;">
+                    <label style="display:block;margin-bottom:5px;font-weight:600;color:#555;">Password</label>
+                    <input type="password" id="loginPassword" style="width:100%;padding:12px;border:1px solid #ddd;border-radius:4px;font-size:1em;" required>
+                </div>
+                <div id="loginError" style="color:#c0392b;margin-bottom:15px;display:none;">Invalid username or password</div>
+                <button type="submit" style="width:100%;padding:12px;background:#003366;color:white;border:none;border-radius:4px;font-size:1em;cursor:pointer;">Log In</button>
+            </form>
+        </div>
+    </div>
+
+    <header>
+        <div class="container">
+            <h1>Minnesota Lobbyist Registration Form Filler</h1>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="sync-bar">
+            <div>
+                <button id="syncBtn">Sync from CFB</button>
+                <span id="syncStatus"></span>
+            </div>
+            <div style="font-size: 0.85em; color: #666;">
+                Forms will match the official CFB registration form exactly
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" data-tab="lobbyists">Lobbyists</button>
+            <button class="tab" data-tab="organizations">Organizations</button>
+            <button class="tab" data-tab="generate">Generate Forms</button>
+        </div>
+
+        <!-- Lobbyists Tab -->
+        <div id="lobbyists-tab" class="tab-content active">
+            <h2>Manage Lobbyists</h2>
+            <div class="search-box">
+                <input type="text" id="lobbyistSearch" placeholder="Search lobbyists...">
+            </div>
+            <h3>Add/Edit Lobbyist</h3>
+            <form id="lobbyistForm">
+                <input type="hidden" id="lobbyistId">
+                <div class="form-row">
+                    <div class="form-group"><label>Reg # (if known)</label><input type="text" id="lobbyistRegNum"></div>
+                    <div class="form-group"><label>Full Name *</label><input type="text" id="lobbyistName" required></div>
+                    <div class="form-group"><label>Email *</label><input type="email" id="lobbyistEmail" required></div>
+                    <div class="form-group"><label>Phone *</label><input type="tel" id="lobbyistPhone" required></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Employer</label><input type="text" id="lobbyistEmployer"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group full"><label>Address Line 1 *</label><input type="text" id="lobbyistAddress1" required></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group full"><label>Address Line 2</label><input type="text" id="lobbyistAddress2"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>City *</label><input type="text" id="lobbyistCity" required></div>
+                    <div class="form-group"><label>State *</label><input type="text" id="lobbyistState" value="MN" required></div>
+                    <div class="form-group"><label>ZIP *</label><input type="text" id="lobbyistZip" required></div>
+                </div>
+                <button type="submit" class="success">Save Lobbyist</button>
+                <button type="button" class="secondary" id="clearLobbyistBtn">Clear</button>
+            </form>
+            <h3>Saved Lobbyists</h3>
+            <div id="lobbyistList"></div>
+        </div>
+
+        <!-- Organizations Tab -->
+        <div id="organizations-tab" class="tab-content">
+            <h2>Manage Organizations</h2>
+            <div style="display:flex;gap:10px;align-items:center;margin-bottom:15px;">
+                <div class="search-box" style="flex:1;margin-bottom:0;">
+                    <input type="text" id="orgSearch" placeholder="Search saved organizations...">
+                </div>
+                <button type="button" id="searchCFBOrgsBtn" style="white-space:nowrap;">Search CFB Directory</button>
+            </div>
+            <div id="cfbSearchHelp" style="display:none;background:#e8f4f8;border:1px solid #b8d4e3;padding:10px;border-radius:4px;margin-bottom:15px;font-size:0.9em;">
+                <strong>Finding an Organization's Entity ID:</strong><br>
+                1. On the CFB page, use the search box to find your organization<br>
+                2. Click on the organization name<br>
+                3. The Entity ID is in the URL (e.g., /lobbying-organizations/<strong>60</strong>/2025.1/)<br>
+                4. Enter that number in the Entity ID field below
+                <button type="button" onclick="document.getElementById('cfbSearchHelp').style.display='none'" style="float:right;padding:2px 8px;font-size:0.8em;">Dismiss</button>
+            </div>
+            <h3>Add/Edit Organization</h3>
+            <form id="orgForm">
+                <input type="hidden" id="orgId">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Entity ID</label>
+                        <div style="display:flex;gap:8px;">
+                            <input type="text" id="orgEntityId" style="flex:1;">
+                            <button type="button" id="lookupCFBBtn" class="secondary" style="white-space:nowrap;margin:0;">Lookup on CFB</button>
+                        </div>
+                    </div>
+                    <div class="form-group full"><label>Organization Name * (spell out acronyms)</label><input type="text" id="orgName" required></div>
+                </div>
+                <div id="cfbLookupHelp" style="display:none;background:#fff3cd;border:1px solid #ffc107;padding:10px;border-radius:4px;margin-bottom:15px;font-size:0.9em;">
+                    <strong>Tip:</strong> Copy the organization details from the CFB page that opened. Look under "Association information" tab for address, phone, website, and contact details.
+                </div>
+                <div class="form-row">
+                    <div class="form-group full"><label>Address *</label><input type="text" id="orgAddress" required></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>City *</label><input type="text" id="orgCity" required></div>
+                    <div class="form-group"><label>State *</label><input type="text" id="orgState" value="MN" required></div>
+                    <div class="form-group"><label>ZIP *</label><input type="text" id="orgZip" required></div>
+                    <div class="form-group"><label>Phone *</label><input type="tel" id="orgPhone" required></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group full"><label>Website *</label><input type="text" id="orgWebsite" required></div>
+                </div>
+                <h3>Association Contact</h3>
+                <div class="form-row">
+                    <div class="form-group"><label>Name and Title *</label><input type="text" id="contactName" required></div>
+                    <div class="form-group"><label>Email *</label><input type="email" id="contactEmail" required></div>
+                    <div class="form-group"><label>Phone *</label><input type="tel" id="contactPhone" required></div>
+                </div>
+                <h3>Officers and Directors</h3>
+                <div id="officersList"></div>
+                <button type="button" class="secondary" id="addOfficerBtn">+ Add Officer/Director</button>
+                <button type="submit" class="success">Save Organization</button>
+                <button type="button" class="secondary" id="clearOrgBtn">Clear</button>
+            </form>
+            <h3>Saved Organizations</h3>
+            <div id="orgList"></div>
+        </div>
+
+        <!-- Generate Forms Tab -->
+        <div id="generate-tab" class="tab-content">
+            <h2>Generate Registration Forms</h2>
+            <div id="generateStatus"></div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Search Organization *</label>
+                    <div class="search-dropdown">
+                        <input type="text" id="orgSearchInput" placeholder="Type to search organizations..." autocomplete="off">
+                        <div class="search-dropdown-list" id="orgSearchDropdown"></div>
+                    </div>
+                    <div id="selectedOrgDisplay"></div>
+                    <input type="hidden" id="selectOrg">
+                </div>
+                <div class="form-group">
+                    <label>Registration Type</label>
+                    <select id="regType">
+                        <option value="new">New Registration</option>
+                        <option value="amendment">Amendment</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Form Date</label>
+                    <input type="date" id="formDate">
+                    <small style="color:#666;display:block;margin-top:4px;">Leave blank for today's date</small>
+                </div>
+                <div class="form-group">
+                    <label>Signature</label>
+                    <select id="signatureSelect">
+                        <option value="">-- No Signature --</option>
+                        <option value="alexiskisesig.png">Alexis Kise</option>
+                        <option value="amykochsig.png">Amy Koch</option>
+                        <option value="izzyrojassig.png">Izzy Rojas</option>
+                        <option value="brianmcdanielsig.png">Brian McDaniel</option>
+                        <option value="nataliamadrygsig.png">Natalia Madryga</option>
+                        <option value="kayladrakesig.png">Kayla Drake</option>
+                        <option value="nicksandbergsig.png">Nick Sandberg</option>
+                        <option value="willwaggonersig.png">Will Waggoner</option>
+                        <option value="mikefranklinig.png">Mike Franklin</option>
+                        <option value="alysennesnesig.png">Alysen Nesse</option>
+                    </select>
+                </div>
+            </div>
+
+            <h3>Search and Select Lobbyists</h3>
+            <div class="form-group" style="margin-bottom: 15px;">
+                <div class="search-dropdown">
+                    <input type="text" id="lobbyistSearchInput" placeholder="Type to search lobbyists..." autocomplete="off">
+                    <div class="search-dropdown-list" id="lobbyistSearchDropdown"></div>
+                </div>
+            </div>
+
+            <p style="color: #666; margin-bottom: 15px; font-size: 0.9em;">
+                Selected lobbyists appear below. Configure reporting and lobbying categories for each.
+            </p>
+            <div class="select-list" id="lobbyistSelectList">
+                <div class="empty">Search and select lobbyists above</div>
+            </div>
+            <button class="success" id="generateBtn" style="margin-top: 20px; padding: 15px 30px; font-size: 1.1em;">
+                Generate PDF Forms
+            </button>
+            <div class="generated-forms" id="generatedForms"></div>
+        </div>
+    </div>
+
+    <script>
+        // ===== CONSTANTS =====
+        const VALID_USERNAME = 'momentum';
+        const VALID_PASSWORD = 'advocacy';
+        // Update this URL to your GitHub raw content URL where signatures are hosted
+        const SIGNATURE_BASE_URL = 'https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/signatures/';
+
+        const CATEGORIES = [
+            'Agriculture', 'Arts and Culture', 'Bonding', 'Business Regulation',
+            'Cannabis, Tobacco, Alcohol', 'Civil - Criminal Law', 'E-12 Education',
+            'Elections and Campaign Finance', 'Energy', 'Environment and Natural Resources',
+            'Food and Beverage Industry', 'Gambling', 'Health Care', 'Higher Education',
+            'Housing', 'Human Services', 'Insurance', 'Labor and Workforce Development',
+            'Local Government', 'Public Safety', 'Public Utilities Commission', 'Sports',
+            'State Government', 'Taxes', 'Technology and Communications', 'Transportation', 'Veteran Affairs'
+        ];
+
+        const CFB_PDF_URL = 'https://cfb.mn.gov/pdf/forms/lobbyist/lob_registration.pdf';
+        let cachedPdfBytes = null;
+        let generatedPDFs = [];
+        let selectedLobbyistIds = [];
+        let reportingForSelections = {}; // Track reporting-for selections per lobbyist
+        let authLobbyistSelections = {}; // Track auth lobbyist selection per lobbyist
+
+        // ===== UTILITIES =====
+        function sanitize(text) {
+            if (!text) return '';
+            return String(text)
+                .replace(/[\u0000-\u001F\u007F-\u009F\u200B-\u200F\u202A-\u202E\u2060-\u206F\uFEFF]/g, '')
+                .replace(/[^\x20-\x7E]/g, '');
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            return String(text)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function getLobbyists() {
+            try { return JSON.parse(localStorage.getItem('mn_lobbyists') || '[]'); }
+            catch (e) { return []; }
+        }
+
+        function saveLobbyistsData(data) {
+            localStorage.setItem('mn_lobbyists', JSON.stringify(data));
+        }
+
+        function getOrganizations() {
+            try { return JSON.parse(localStorage.getItem('mn_organizations') || '[]'); }
+            catch (e) { return []; }
+        }
+
+        function saveOrganizationsData(data) {
+            localStorage.setItem('mn_organizations', JSON.stringify(data));
+        }
+
+        // ===== TABS =====
+        function showTab(name) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelector('[data-tab="' + name + '"]').classList.add('active');
+            document.getElementById(name + '-tab').classList.add('active');
+            if (name === 'generate') {
+                // Reset generate tab
+                document.getElementById('selectOrg').value = '';
+                document.getElementById('orgSearchInput').value = '';
+                document.getElementById('selectedOrgDisplay').innerHTML = '';
+                document.getElementById('lobbyistSearchInput').value = '';
+                selectedLobbyistIds = [];
+                generatedPDFs = [];
+                document.getElementById('generatedForms').innerHTML = '';
+                renderSelectedLobbyists();
+            }
+        }
+
+        // ===== LOBBYISTS =====
+        function saveLobbyist(e) {
+            e.preventDefault();
+            var lobbyist = {
+                id: document.getElementById('lobbyistId').value || Date.now().toString(),
+                regNum: sanitize(document.getElementById('lobbyistRegNum').value),
+                name: sanitize(document.getElementById('lobbyistName').value),
+                email: sanitize(document.getElementById('lobbyistEmail').value),
+                phone: sanitize(document.getElementById('lobbyistPhone').value),
+                employer: sanitize(document.getElementById('lobbyistEmployer').value),
+                address1: sanitize(document.getElementById('lobbyistAddress1').value),
+                address2: sanitize(document.getElementById('lobbyistAddress2').value),
+                city: sanitize(document.getElementById('lobbyistCity').value),
+                state: sanitize(document.getElementById('lobbyistState').value),
+                zip: sanitize(document.getElementById('lobbyistZip').value)
+            };
+
+            var list = getLobbyists();
+            var idx = list.findIndex(function(l) { return l.id === lobbyist.id; });
+            if (idx >= 0) list[idx] = lobbyist;
+            else list.push(lobbyist);
+
+            saveLobbyistsData(list);
+            clearLobbyistForm();
+            renderLobbyists();
+        }
+
+        function clearLobbyistForm() {
+            document.getElementById('lobbyistForm').reset();
+            document.getElementById('lobbyistId').value = '';
+            document.getElementById('lobbyistState').value = 'MN';
+        }
+
+        function editLobbyist(id) {
+            var l = getLobbyists().find(function(x) { return x.id === id; });
+            if (!l) return;
+            document.getElementById('lobbyistId').value = l.id;
+            document.getElementById('lobbyistRegNum').value = l.regNum || '';
+            document.getElementById('lobbyistName').value = l.name || '';
+            document.getElementById('lobbyistEmail').value = l.email || '';
+            document.getElementById('lobbyistPhone').value = l.phone || '';
+            document.getElementById('lobbyistEmployer').value = l.employer || '';
+            document.getElementById('lobbyistAddress1').value = l.address1 || l.address || '';
+            document.getElementById('lobbyistAddress2').value = l.address2 || '';
+            document.getElementById('lobbyistCity').value = l.city || '';
+            document.getElementById('lobbyistState').value = l.state || 'MN';
+            document.getElementById('lobbyistZip').value = l.zip || '';
+            window.scrollTo(0, 0);
+        }
+
+        function deleteLobbyist(id) {
+            if (!confirm('Delete this lobbyist?')) return;
+            saveLobbyistsData(getLobbyists().filter(function(l) { return l.id !== id; }));
+            renderLobbyists();
+        }
+
+        function renderLobbyists() {
+            var search = (document.getElementById('lobbyistSearch').value || '').toLowerCase();
+            var list = getLobbyists();
+            if (search) {
+                list = list.filter(function(l) {
+                    return (l.name || '').toLowerCase().indexOf(search) >= 0 ||
+                        (l.email || '').toLowerCase().indexOf(search) >= 0 ||
+                        (l.regNum || '').indexOf(search) >= 0;
+                });
+            }
+
+            var container = document.getElementById('lobbyistList');
+            if (list.length === 0) {
+                container.innerHTML = '<div class="empty">No lobbyists found</div>';
+                return;
+            }
+
+            var html = '';
+            for (var i = 0; i < list.length; i++) {
+                var l = list[i];
+                html += '<div class="list-item">';
+                html += '<div>';
+                html += '<h4>';
+                if (l.regNum) html += '<span class="reg-badge">#' + escapeHtml(l.regNum) + '</span>';
+                html += escapeHtml(l.name);
+                if (l.fromCFB) html += '<span class="cfb-badge">CFB</span>';
+                html += '</h4>';
+                html += '<p>' + escapeHtml(l.email) + ' | ' + escapeHtml(l.phone) + '</p>';
+                html += '</div>';
+                html += '<div>';
+                html += '<button class="secondary" data-edit-lobbyist="' + escapeHtml(l.id) + '">Edit</button>';
+                html += '<button class="danger" data-delete-lobbyist="' + escapeHtml(l.id) + '">Delete</button>';
+                html += '</div></div>';
+            }
+            container.innerHTML = html;
+        }
+
+        // ===== ORGANIZATIONS =====
+        function addOfficer(name, address) {
+            var container = document.getElementById('officersList');
+            var id = Date.now();
+            var div = document.createElement('div');
+            div.className = 'officer-row';
+            div.setAttribute('data-officer-id', id);
+            div.innerHTML = '<input type="text" placeholder="Name and Title" value="' + escapeHtml(name || '') + '" class="officer-name">' +
+                '<input type="text" placeholder="Address" value="' + escapeHtml(address || '') + '" class="officer-address">' +
+                '<button type="button" class="danger" data-remove-officer="' + id + '">Remove</button>';
+            container.appendChild(div);
+        }
+
+        function getOfficers() {
+            var officers = [];
+            var rows = document.querySelectorAll('.officer-row');
+            for (var i = 0; i < rows.length; i++) {
+                var row = rows[i];
+                var name = row.querySelector('.officer-name').value.trim();
+                var address = row.querySelector('.officer-address').value.trim();
+                if (name || address) officers.push({ name: sanitize(name), address: sanitize(address) });
+            }
+            return officers;
+        }
+
+        function saveOrganization(e) {
+            e.preventDefault();
+            var org = {
+                id: document.getElementById('orgId').value || Date.now().toString(),
+                entityId: sanitize(document.getElementById('orgEntityId').value),
+                name: sanitize(document.getElementById('orgName').value),
+                address: sanitize(document.getElementById('orgAddress').value),
+                city: sanitize(document.getElementById('orgCity').value),
+                state: sanitize(document.getElementById('orgState').value),
+                zip: sanitize(document.getElementById('orgZip').value),
+                phone: sanitize(document.getElementById('orgPhone').value),
+                website: sanitize(document.getElementById('orgWebsite').value),
+                contactName: sanitize(document.getElementById('contactName').value),
+                contactEmail: sanitize(document.getElementById('contactEmail').value),
+                contactPhone: sanitize(document.getElementById('contactPhone').value),
+                officers: getOfficers()
+            };
+
+            var list = getOrganizations();
+            var idx = list.findIndex(function(o) { return o.id === org.id; });
+            if (idx >= 0) list[idx] = org;
+            else list.push(org);
+
+            saveOrganizationsData(list);
+            clearOrgForm();
+            renderOrganizations();
+        }
+
+        function clearOrgForm() {
+            document.getElementById('orgForm').reset();
+            document.getElementById('orgId').value = '';
+            document.getElementById('orgState').value = 'MN';
+            document.getElementById('officersList').innerHTML = '';
+            document.getElementById('cfbLookupHelp').style.display = 'none';
+        }
+
+        function editOrganization(id) {
+            var o = getOrganizations().find(function(x) { return x.id === id; });
+            if (!o) return;
+            document.getElementById('orgId').value = o.id;
+            document.getElementById('orgEntityId').value = o.entityId || '';
+            document.getElementById('orgName').value = o.name || '';
+            document.getElementById('orgAddress').value = o.address || '';
+            document.getElementById('orgCity').value = o.city || '';
+            document.getElementById('orgState').value = o.state || 'MN';
+            document.getElementById('orgZip').value = o.zip || '';
+            document.getElementById('orgPhone').value = o.phone || '';
+            document.getElementById('orgWebsite').value = o.website || '';
+            document.getElementById('contactName').value = o.contactName || '';
+            document.getElementById('contactEmail').value = o.contactEmail || '';
+            document.getElementById('contactPhone').value = o.contactPhone || '';
+
+            document.getElementById('officersList').innerHTML = '';
+            var officers = o.officers || [];
+            for (var i = 0; i < officers.length; i++) {
+                addOfficer(officers[i].name, officers[i].address);
+            }
+            window.scrollTo(0, 0);
+        }
+
+        function deleteOrganization(id) {
+            if (!confirm('Delete this organization?')) return;
+            saveOrganizationsData(getOrganizations().filter(function(o) { return o.id !== id; }));
+            renderOrganizations();
+        }
+
+        function renderOrganizations() {
+            var search = (document.getElementById('orgSearch').value || '').toLowerCase();
+            var list = getOrganizations();
+            if (search) {
+                list = list.filter(function(o) {
+                    return (o.name || '').toLowerCase().indexOf(search) >= 0;
+                });
+            }
+
+            var container = document.getElementById('orgList');
+            if (list.length === 0) {
+                container.innerHTML = '<div class="empty">No organizations found</div>';
+                return;
+            }
+
+            var html = '';
+            for (var i = 0; i < list.length; i++) {
+                var o = list[i];
+                html += '<div class="list-item">';
+                html += '<div>';
+                html += '<h4>';
+                if (o.entityId) html += '<span class="reg-badge">#' + escapeHtml(o.entityId) + '</span>';
+                html += escapeHtml(o.name);
+                if (o.fromCFB) html += '<span class="cfb-badge">CFB</span>';
+                html += '</h4>';
+                html += '<p>' + escapeHtml(o.address || 'No address') + ', ' + escapeHtml(o.city) + ' ' + escapeHtml(o.state) + '</p>';
+                html += '</div>';
+                html += '<div>';
+                if (o.entityId) {
+                    html += '<a href="https://cfb.mn.gov/reports-and-data/viewers/lobbying/lobbying-organizations/' + escapeHtml(o.entityId) + '/2025.1/" target="_blank" style="margin-right:8px;color:#0088cc;text-decoration:none;font-size:0.85em;">View on CFB</a>';
+                }
+                html += '<button class="secondary" data-edit-org="' + escapeHtml(o.id) + '">Edit</button>';
+                html += '<button class="danger" data-delete-org="' + escapeHtml(o.id) + '">Delete</button>';
+                html += '</div></div>';
+            }
+            container.innerHTML = html;
+        }
+
+        // ===== GENERATE TAB =====
+        function populateOrgSelect() {
+            var select = document.getElementById('selectOrg');
+            var orgs = getOrganizations();
+            var html = '<option value="">-- Select Organization --</option>';
+            for (var i = 0; i < orgs.length; i++) {
+                html += '<option value="' + escapeHtml(orgs[i].id) + '">' + escapeHtml(orgs[i].name) + '</option>';
+            }
+            select.innerHTML = html;
+            renderLobbyistSelect();
+        }
+
+        // ===== GENERATE TAB SEARCH FUNCTIONS =====
+
+        function searchOrganizations(query) {
+            var dropdown = document.getElementById('orgSearchDropdown');
+            if (!query || query.length < 1) {
+                dropdown.classList.remove('visible');
+                return;
+            }
+
+            var orgs = getOrganizations();
+            var matches = orgs.filter(function(o) {
+                return (o.name || '').toLowerCase().indexOf(query.toLowerCase()) >= 0;
+            }).slice(0, 10);
+
+            if (matches.length === 0) {
+                dropdown.innerHTML = '<div class="search-dropdown-item">No matches found</div>';
+            } else {
+                var html = '';
+                for (var i = 0; i < matches.length; i++) {
+                    var o = matches[i];
+                    html += '<div class="search-dropdown-item" data-org-id="' + escapeHtml(o.id) + '">';
+                    html += '<strong>' + escapeHtml(o.name) + '</strong><br>';
+                    html += '<small>' + escapeHtml(o.city || '') + ', ' + escapeHtml(o.state || '') + '</small>';
+                    html += '</div>';
+                }
+                dropdown.innerHTML = html;
+            }
+            dropdown.classList.add('visible');
+        }
+
+        function selectOrganization(orgId) {
+            var org = getOrganizations().find(function(o) { return o.id === orgId; });
+            if (!org) return;
+
+            document.getElementById('selectOrg').value = orgId;
+            document.getElementById('orgSearchInput').value = '';
+            document.getElementById('orgSearchDropdown').classList.remove('visible');
+
+            document.getElementById('selectedOrgDisplay').innerHTML =
+                '<div class="selected-item"><span><strong>' + escapeHtml(org.name) + '</strong></span>' +
+                '<button type="button" data-clear-org>Clear</button></div>';
+        }
+
+        function searchLobbyists(query) {
+            var dropdown = document.getElementById('lobbyistSearchDropdown');
+            if (!query || query.length < 1) {
+                dropdown.classList.remove('visible');
+                return;
+            }
+
+            var lobbyists = getLobbyists();
+            var matches = lobbyists.filter(function(l) {
+                var alreadySelected = selectedLobbyistIds.indexOf(l.id) >= 0;
+                var matchesQuery = (l.name || '').toLowerCase().indexOf(query.toLowerCase()) >= 0 ||
+                                   (l.regNum || '').indexOf(query) >= 0;
+                return matchesQuery && !alreadySelected;
+            }).slice(0, 10);
+
+            if (matches.length === 0) {
+                dropdown.innerHTML = '<div class="search-dropdown-item">No matches found</div>';
+            } else {
+                var html = '';
+                for (var i = 0; i < matches.length; i++) {
+                    var l = matches[i];
+                    var displayName = (l.regNum ? '#' + l.regNum + ' - ' : '') + escapeHtml(l.name);
+                    html += '<div class="search-dropdown-item" data-lobbyist-id="' + escapeHtml(l.id) + '">';
+                    html += '<strong>' + displayName + '</strong><br>';
+                    html += '<small>' + escapeHtml(l.email || '') + '</small>';
+                    html += '</div>';
+                }
+                dropdown.innerHTML = html;
+            }
+            dropdown.classList.add('visible');
+        }
+
+        function addLobbyistToSelection(lobbyistId) {
+            if (selectedLobbyistIds.indexOf(lobbyistId) < 0) {
+                selectedLobbyistIds.push(lobbyistId);
+            }
+            document.getElementById('lobbyistSearchInput').value = '';
+            document.getElementById('lobbyistSearchDropdown').classList.remove('visible');
+            renderSelectedLobbyists();
+        }
+
+        function removeLobbyistFromSelection(lobbyistId) {
+            selectedLobbyistIds = selectedLobbyistIds.filter(function(id) { return id !== lobbyistId; });
+            delete reportingForSelections[lobbyistId];
+            delete authLobbyistSelections[lobbyistId];
+            renderSelectedLobbyists();
+        }
+
+        // Search for lobbyists in the "reporting for" dropdown
+        function searchReportingForLobbyists(forLobbyistId, query) {
+            var dropdown = document.querySelector('[data-reporting-for-dropdown="' + forLobbyistId + '"]');
+            if (!dropdown) return;
+
+            if (!query || query.length < 1) {
+                dropdown.classList.remove('visible');
+                return;
+            }
+
+            var lobbyists = getLobbyists();
+            var alreadySelected = reportingForSelections[forLobbyistId] || [];
+            var matches = lobbyists.filter(function(l) {
+                var isAlreadySelected = alreadySelected.indexOf(l.id) >= 0;
+                var isSelf = l.id === forLobbyistId;
+                var matchesQuery = (l.name || '').toLowerCase().indexOf(query.toLowerCase()) >= 0 ||
+                                   (l.regNum || '').indexOf(query) >= 0;
+                return matchesQuery && !isAlreadySelected && !isSelf;
+            }).slice(0, 10);
+
+            if (matches.length === 0) {
+                dropdown.innerHTML = '<div class="search-dropdown-item">No matches found</div>';
+            } else {
+                var html = '';
+                for (var i = 0; i < matches.length; i++) {
+                    var l = matches[i];
+                    var displayName = (l.regNum ? '#' + l.regNum + ' - ' : '') + escapeHtml(l.name);
+                    html += '<div class="search-dropdown-item" data-reporting-for-add="' + escapeHtml(forLobbyistId) + '" data-add-lobbyist="' + escapeHtml(l.id) + '">';
+                    html += '<strong>' + displayName + '</strong><br>';
+                    html += '<small>' + escapeHtml(l.email || '') + '</small>';
+                    html += '</div>';
+                }
+                dropdown.innerHTML = html;
+            }
+            dropdown.classList.add('visible');
+        }
+
+        function addReportingForLobbyist(forLobbyistId, lobbyistId) {
+            if (!reportingForSelections[forLobbyistId]) {
+                reportingForSelections[forLobbyistId] = [];
+            }
+            if (reportingForSelections[forLobbyistId].indexOf(lobbyistId) < 0) {
+                reportingForSelections[forLobbyistId].push(lobbyistId);
+            }
+            var searchInput = document.querySelector('[data-reporting-for-search="' + forLobbyistId + '"]');
+            var dropdown = document.querySelector('[data-reporting-for-dropdown="' + forLobbyistId + '"]');
+            if (searchInput) searchInput.value = '';
+            if (dropdown) dropdown.classList.remove('visible');
+            renderReportingForSelected(forLobbyistId);
+        }
+
+        function removeReportingForLobbyist(forLobbyistId, lobbyistId) {
+            if (reportingForSelections[forLobbyistId]) {
+                reportingForSelections[forLobbyistId] = reportingForSelections[forLobbyistId].filter(function(id) {
+                    return id !== lobbyistId;
+                });
+            }
+            renderReportingForSelected(forLobbyistId);
+        }
+
+        // Search for auth lobbyist (who will report for this lobbyist)
+        function searchAuthLobbyists(forLobbyistId, query) {
+            var dropdown = document.querySelector('[data-auth-lobbyist-dropdown="' + forLobbyistId + '"]');
+            if (!dropdown) return;
+
+            if (!query || query.length < 1) {
+                dropdown.classList.remove('visible');
+                return;
+            }
+
+            var lobbyists = getLobbyists();
+            var matches = lobbyists.filter(function(l) {
+                var isSelf = l.id === forLobbyistId;
+                var matchesQuery = (l.name || '').toLowerCase().indexOf(query.toLowerCase()) >= 0 ||
+                                   (l.regNum || '').indexOf(query) >= 0;
+                return matchesQuery && !isSelf;
+            }).slice(0, 10);
+
+            if (matches.length === 0) {
+                dropdown.innerHTML = '<div class="search-dropdown-item">No matches found</div>';
+            } else {
+                var html = '';
+                for (var i = 0; i < matches.length; i++) {
+                    var l = matches[i];
+                    var displayName = (l.regNum ? '#' + l.regNum + ' - ' : '') + escapeHtml(l.name);
+                    html += '<div class="search-dropdown-item" data-auth-select-for="' + escapeHtml(forLobbyistId) + '" data-auth-select-id="' + escapeHtml(l.id) + '">';
+                    html += '<strong>' + displayName + '</strong><br>';
+                    html += '<small>' + escapeHtml(l.email || '') + '</small>';
+                    html += '</div>';
+                }
+                dropdown.innerHTML = html;
+            }
+            dropdown.classList.add('visible');
+        }
+
+        function selectAuthLobbyist(forLobbyistId, authId) {
+            authLobbyistSelections[forLobbyistId] = authId;
+            var searchInput = document.querySelector('[data-auth-lobbyist-search="' + forLobbyistId + '"]');
+            var dropdown = document.querySelector('[data-auth-lobbyist-dropdown="' + forLobbyistId + '"]');
+            if (searchInput) searchInput.value = '';
+            if (dropdown) dropdown.classList.remove('visible');
+            renderAuthLobbyistSelected(forLobbyistId);
+        }
+
+        function clearAuthLobbyist(forLobbyistId) {
+            delete authLobbyistSelections[forLobbyistId];
+            renderAuthLobbyistSelected(forLobbyistId);
+        }
+
+        function renderAuthLobbyistSelected(forLobbyistId) {
+            var container = document.querySelector('[data-auth-lobbyist-selected="' + forLobbyistId + '"]');
+            if (!container) return;
+
+            var selectedId = authLobbyistSelections[forLobbyistId];
+            if (!selectedId) {
+                container.innerHTML = '<small style="color:#666;">No lobbyist selected</small>';
+                return;
+            }
+
+            var allLobbyists = getLobbyists();
+            var l = allLobbyists.find(function(x) { return x.id === selectedId; });
+            if (l) {
+                var displayName = (l.regNum ? '#' + l.regNum + ' - ' : '') + escapeHtml(l.name);
+                container.innerHTML = '<div class="selected-item">' +
+                    '<span>' + displayName + '</span>' +
+                    '<button type="button" data-clear-auth-for="' + escapeHtml(forLobbyistId) + '" style="background:#c0392b;padding:4px 10px;margin:0;font-size:0.85em;">Clear</button>' +
+                    '</div>';
+            } else {
+                container.innerHTML = '<small style="color:#666;">No lobbyist selected</small>';
+            }
+        }
+
+        function renderReportingForSelected(forLobbyistId) {
+            var container = document.querySelector('[data-reporting-for-selected="' + forLobbyistId + '"]');
+            if (!container) return;
+
+            var selectedIds = reportingForSelections[forLobbyistId] || [];
+            if (selectedIds.length === 0) {
+                container.innerHTML = '<small style="color:#666;">No lobbyists selected</small>';
+                return;
+            }
+
+            var allLobbyists = getLobbyists();
+            var html = '';
+            for (var i = 0; i < selectedIds.length; i++) {
+                var l = allLobbyists.find(function(x) { return x.id === selectedIds[i]; });
+                if (l) {
+                    var displayName = (l.regNum ? '#' + l.regNum + ' - ' : '') + escapeHtml(l.name);
+                    html += '<div class="selected-item" style="margin-bottom:5px;">';
+                    html += '<span>' + displayName + '</span>';
+                    html += '<button type="button" data-reporting-for-remove="' + escapeHtml(forLobbyistId) + '" data-remove-id="' + escapeHtml(l.id) + '" style="background:#c0392b;padding:4px 10px;margin:0;font-size:0.85em;">Remove</button>';
+                    html += '</div>';
+                }
+            }
+            container.innerHTML = html;
+        }
+
+        function buildLobbyistOptionsHtml(lobbyists, excludeId) {
+            var html = '<option value="">-- Select --</option>';
+            for (var j = 0; j < lobbyists.length; j++) {
+                if (lobbyists[j].id !== excludeId) {
+                    var name = (lobbyists[j].regNum ? '#' + lobbyists[j].regNum + ' - ' : '') + escapeHtml(lobbyists[j].name);
+                    html += '<option value="' + escapeHtml(lobbyists[j].id) + '">' + name + '</option>';
+                }
+            }
+            return html;
+        }
+
+        function buildCategoryTableHtml(lobbyistId) {
+            var html = '<div class="reporting-section"><label>Lobbying Categories:</label>';
+            html += '<table class="category-table" style="margin-top:10px;">';
+            html += '<thead><tr><th style="width:40%">Category</th><th>Leg.</th><th>Admin.</th><th>Pol. Sub.</th><th>MN PUC</th></tr></thead><tbody>';
+            for (var i = 0; i < CATEGORIES.length; i++) {
+                var cat = CATEGORIES[i];
+                var catId = cat.replace(/[^a-zA-Z0-9]/g, '_');
+                var prefix = lobbyistId + '_' + catId;
+                html += '<tr>';
+                html += '<td><label><input type="checkbox" data-lob-cat="' + lobbyistId + '" data-cat-name="' + escapeHtml(cat) + '"> ' + escapeHtml(cat) + '</label></td>';
+                html += '<td><input type="checkbox" data-lob-cat-leg="' + prefix + '"></td>';
+                html += '<td><input type="checkbox" data-lob-cat-admin="' + prefix + '"></td>';
+                html += '<td><input type="checkbox" data-lob-cat-pol="' + prefix + '"></td>';
+                html += '<td><input type="checkbox" data-lob-cat-puc="' + prefix + '"></td>';
+                html += '</tr>';
+            }
+            html += '</tbody></table></div>';
+            return html;
+        }
+
+        function renderSelectedLobbyists() {
+            var container = document.getElementById('lobbyistSelectList');
+
+            if (selectedLobbyistIds.length === 0) {
+                container.innerHTML = '<div class="empty">Search and select lobbyists above</div>';
+                return;
+            }
+
+            var allLobbyists = getLobbyists();
+            var html = '';
+
+            for (var i = 0; i < selectedLobbyistIds.length; i++) {
+                var lobbyistId = selectedLobbyistIds[i];
+                var l = allLobbyists.find(function(x) { return x.id === lobbyistId; });
+                if (!l) continue;
+
+                var safeId = escapeHtml(l.id);
+                var displayName = (l.regNum ? '#' + l.regNum + ' - ' : '') + escapeHtml(l.name);
+
+                html += '<div class="select-item">';
+                html += '<div class="select-item-header">';
+                html += '<input type="checkbox" data-select-lobbyist="' + safeId + '" checked>';
+                html += '<div style="flex:1">';
+                html += '<strong>' + displayName + '</strong><br>';
+                html += '<small>' + escapeHtml(l.email || '') + ' | ' + escapeHtml(l.phone || '') + '</small>';
+                html += '</div>';
+                html += '<button type="button" class="danger" data-remove-lobbyist="' + safeId + '" style="margin:0;padding:4px 10px;font-size:0.85em;">Remove</button>';
+                html += '</div>';
+
+                html += '<div class="select-item-options visible" data-options-for="' + safeId + '">';
+
+                // Designated lobbyist checkbox
+                html += '<div class="reporting-section">';
+                html += '<label style="display:flex;align-items:center;gap:8px;cursor:pointer;">';
+                html += '<input type="checkbox" data-designated-lobbyist="' + safeId + '" style="width:18px;height:18px;">';
+                html += ' I am the association\'s designated lobbyist';
+                html += '</label></div>';
+
+                // Reporting status
+                html += '<div class="reporting-section">';
+                html += '<label>Reporting Status:</label>';
+                html += '<select data-reporting-type="' + safeId + '">';
+                html += '<option value="self">Self-reporting</option>';
+                html += '<option value="authorizing">Authorizing another to report for me</option>';
+                html += '<option value="reporting">Reporting for others</option>';
+                html += '</select></div>';
+
+                html += '<div class="reporting-section" data-auth-section="' + safeId + '" style="display:none;">';
+                html += '<label>Who will report for ' + escapeHtml(l.name) + '?</label>';
+                html += '<div class="search-dropdown" style="margin-top:8px;">';
+                html += '<input type="text" data-auth-lobbyist-search="' + safeId + '" placeholder="Type to search lobbyists..." autocomplete="off">';
+                html += '<div class="search-dropdown-list" data-auth-lobbyist-dropdown="' + safeId + '"></div>';
+                html += '</div>';
+                html += '<div data-auth-lobbyist-selected="' + safeId + '" style="margin-top:8px;"></div>';
+                html += '</div>';
+
+                html += '<div class="reporting-section" data-reporting-section="' + safeId + '" style="display:none;">';
+                html += '<label>Reporting for which lobbyists?</label>';
+                html += '<div class="search-dropdown" style="margin-top:8px;">';
+                html += '<input type="text" data-reporting-for-search="' + safeId + '" placeholder="Type to search lobbyists..." autocomplete="off">';
+                html += '<div class="search-dropdown-list" data-reporting-for-dropdown="' + safeId + '"></div>';
+                html += '</div>';
+                html += '<div data-reporting-for-selected="' + safeId + '" style="margin-top:8px;"></div>';
+                html += '</div>';
+
+                // Lobbying categories
+                html += buildCategoryTableHtml(safeId);
+
+                html += '</div></div>';
+            }
+
+            container.innerHTML = html;
+        }
+
+        // ===== PDF GENERATION =====
+        function collectCategoriesForLobbyist(lobbyistId) {
+            var categories = [];
+            var catCheckboxes = document.querySelectorAll('[data-lob-cat="' + lobbyistId + '"]:checked');
+            for (var i = 0; i < catCheckboxes.length; i++) {
+                var catName = catCheckboxes[i].getAttribute('data-cat-name');
+                var catId = catName.replace(/[^a-zA-Z0-9]/g, '_');
+                var prefix = lobbyistId + '_' + catId;
+                var legEl = document.querySelector('[data-lob-cat-leg="' + prefix + '"]');
+                var adminEl = document.querySelector('[data-lob-cat-admin="' + prefix + '"]');
+                var polEl = document.querySelector('[data-lob-cat-pol="' + prefix + '"]');
+                var pucEl = document.querySelector('[data-lob-cat-puc="' + prefix + '"]');
+                categories.push({
+                    name: catName,
+                    legislative: legEl ? legEl.checked : false,
+                    administrative: adminEl ? adminEl.checked : false,
+                    political: polEl ? polEl.checked : false,
+                    puc: pucEl ? pucEl.checked : false
+                });
+            }
+            return categories;
+        }
+
+        async function generatePDFs() {
+            var statusDiv = document.getElementById('generateStatus');
+            var orgId = document.getElementById('selectOrg').value;
+
+            if (!orgId) {
+                statusDiv.innerHTML = '<div class="status error">Please select an organization.</div>';
+                return;
+            }
+
+            var selected = [];
+            var checkboxes = document.querySelectorAll('[data-select-lobbyist]:checked');
+
+            for (var i = 0; i < checkboxes.length; i++) {
+                var id = checkboxes[i].getAttribute('data-select-lobbyist');
+                var reportingTypeEl = document.querySelector('[data-reporting-type="' + id + '"]');
+                var reportingType = reportingTypeEl ? reportingTypeEl.value : 'self';
+
+                var designatedLobbyistEl = document.querySelector('[data-designated-lobbyist="' + id + '"]');
+                var isDesignatedLobbyist = designatedLobbyistEl ? designatedLobbyistEl.checked : false;
+
+                var authLobbyistId = null;
+                var reportingForIds = [];
+
+                if (reportingType === 'authorizing') {
+                    authLobbyistId = authLobbyistSelections[id] || null;
+                } else if (reportingType === 'reporting') {
+                    reportingForIds = reportingForSelections[id] || [];
+                }
+
+                var categories = collectCategoriesForLobbyist(id);
+                selected.push({ id: id, reportingType: reportingType, isDesignatedLobbyist: isDesignatedLobbyist, authLobbyistId: authLobbyistId, reportingForIds: reportingForIds, categories: categories });
+            }
+
+            if (selected.length === 0) {
+                statusDiv.innerHTML = '<div class="status error">Please select at least one lobbyist.</div>';
+                return;
+            }
+
+            var org = getOrganizations().find(function(o) { return o.id === orgId; });
+            var lobbyists = getLobbyists();
+            var isNew = document.getElementById('regType').value === 'new';
+            var formDateInput = document.getElementById('formDate').value;
+            var formDate = formDateInput ? new Date(formDateInput + 'T00:00:00') : new Date();
+            var signatureFile = document.getElementById('signatureSelect').value;
+
+            statusDiv.innerHTML = '<div class="status info">Generating PDF forms...</div>';
+            generatedPDFs = [];
+
+            try {
+                for (var i = 0; i < selected.length; i++) {
+                    var sel = selected[i];
+                    var lobbyist = lobbyists.find(function(l) { return l.id === sel.id; });
+                    if (lobbyist) {
+                        var authLobbyist = sel.authLobbyistId ? lobbyists.find(function(l) { return l.id === sel.authLobbyistId; }) : null;
+                        var reportingFor = sel.reportingForIds.map(function(rid) {
+                            return lobbyists.find(function(l) { return l.id === rid; });
+                        }).filter(Boolean);
+
+                        var pdfBytes = await createCustomPDF(lobbyist, org, sel.reportingType, isNew, authLobbyist, reportingFor, sel.categories, sel.isDesignatedLobbyist, formDate, signatureFile);
+                        var fileName = sanitize(lobbyist.name).replace(/[^a-z0-9]/gi, '_') + '_' +
+                                        sanitize(org.name).replace(/[^a-z0-9]/gi, '_').substring(0,20) + '_Registration.pdf';
+
+                        generatedPDFs.push({ bytes: pdfBytes, fileName: fileName, lobbyistName: lobbyist.name });
+                    }
+                }
+
+                statusDiv.innerHTML = '<div class="status success">Generated ' + generatedPDFs.length + ' PDF(s)! Downloads started. Click buttons below to re-download.</div>';
+                renderGeneratedForms();
+
+                // Auto-download with staggered timing for Chrome
+                for (var i = 0; i < generatedPDFs.length; i++) {
+                    (function(idx) {
+                        setTimeout(function() {
+                            downloadPDF(idx);
+                        }, idx * 800);
+                    })(i);
+                }
+
+            } catch (err) {
+                console.error(err);
+                statusDiv.innerHTML = '<div class="status error">Error: ' + err.message + '</div>';
+            }
+        }
+
+        function renderGeneratedForms() {
+            var container = document.getElementById('generatedForms');
+            if (generatedPDFs.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+
+            var html = '<h3>Generated Forms (click to re-download)</h3>';
+            for (var i = 0; i < generatedPDFs.length; i++) {
+                html += '<div class="generated-form-item">';
+                html += '<span>' + escapeHtml(generatedPDFs[i].lobbyistName) + ' - ' + escapeHtml(generatedPDFs[i].fileName) + '</span>';
+                html += '<button data-download-pdf="' + i + '">Download Again</button>';
+                html += '</div>';
+            }
+            container.innerHTML = html;
+        }
+
+        function downloadPDF(index) {
+            if (!generatedPDFs[index]) return;
+
+            var pdf = generatedPDFs[index];
+            var blob = new Blob([pdf.bytes], { type: 'application/pdf' });
+            var url = URL.createObjectURL(blob);
+
+            // Create fresh link each time
+            var link = document.createElement('a');
+            link.href = url;
+            link.download = pdf.fileName;
+            link.style.cssText = 'position:fixed;left:-9999px;';
+            document.body.appendChild(link);
+
+            // Click and cleanup
+            link.click();
+
+            setTimeout(function() {
+                if (link.parentNode) {
+                    document.body.removeChild(link);
+                }
+                URL.revokeObjectURL(url);
+            }, 2000);
+        }
+
+        async function createCustomPDF(lobbyist, org, reportingType, isNew, authLobbyist, reportingFor, categories, isDesignatedLobbyist, formDate, signatureFile) {
+            var PDFDocument = PDFLib.PDFDocument;
+            var rgb = PDFLib.rgb;
+            var StandardFonts = PDFLib.StandardFonts;
+
+            var pdfDoc = await PDFDocument.create();
+            var font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+            var fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+
+            // Page dimensions (Letter size)
+            var pageWidth = 612;
+            var pageHeight = 792;
+            var margin = 50;
+            var contentWidth = pageWidth - (margin * 2);
+
+            // Colors
+            var headerBg = rgb(0, 0.2, 0.4);
+            var black = rgb(0, 0, 0);
+            var gray = rgb(0.3, 0.3, 0.3);
+            var lightGray = rgb(0.9, 0.9, 0.9);
+            var white = rgb(1, 1, 1);
+
+            // ========== PAGE 1 ==========
+            var page1 = pdfDoc.addPage([pageWidth, pageHeight]);
+            var y = pageHeight - margin;
+
+            // Header
+            page1.drawRectangle({ x: 0, y: pageHeight - 80, width: pageWidth, height: 80, color: headerBg });
+            page1.drawText('Minnesota Lobbyist Registration', { x: margin, y: pageHeight - 45, size: 20, font: fontBold, color: white });
+            page1.drawText('Campaign Finance and Public Disclosure Board', { x: margin, y: pageHeight - 65, size: 11, font: font, color: white });
+
+            y = pageHeight - 110;
+
+            // Registration Type
+            page1.drawText('Registration Type:', { x: margin, y: y, size: 11, font: fontBold, color: black });
+            page1.drawRectangle({ x: margin + 110, y: y - 3, width: 12, height: 12, borderColor: black, borderWidth: 1 });
+            if (isNew) page1.drawText('X', { x: margin + 112, y: y - 1, size: 10, font: fontBold, color: black });
+            page1.drawText('New Registration', { x: margin + 128, y: y, size: 10, font: font, color: black });
+
+            page1.drawRectangle({ x: margin + 240, y: y - 3, width: 12, height: 12, borderColor: black, borderWidth: 1 });
+            if (!isNew) page1.drawText('X', { x: margin + 242, y: y - 1, size: 10, font: fontBold, color: black });
+            page1.drawText('Amendment', { x: margin + 258, y: y, size: 10, font: font, color: black });
+
+            if (!isNew && lobbyist.regNum) {
+                page1.drawText('Reg #: ' + sanitize(lobbyist.regNum), { x: margin + 350, y: y, size: 10, font: font, color: black });
+            }
+
+            y -= 35;
+
+            // Section: Lobbyist Information
+            page1.drawRectangle({ x: margin, y: y - 5, width: contentWidth, height: 20, color: headerBg });
+            page1.drawText('LOBBYIST INFORMATION', { x: margin + 10, y: y, size: 11, font: fontBold, color: white });
+            y -= 30;
+
+            function drawField(page, label, value, x, yPos, labelWidth, valueWidth) {
+                page.drawText(label, { x: x, y: yPos, size: 9, font: fontBold, color: gray });
+                page.drawText(sanitize(value) || '', { x: x, y: yPos - 14, size: 10, font: font, color: black });
+                page.drawLine({ start: { x: x, y: yPos - 17 }, end: { x: x + (valueWidth || 200), y: yPos - 17 }, thickness: 0.5, color: lightGray });
+            }
+
+            drawField(page1, 'Full Name', lobbyist.name, margin, y, 80, 250);
+            if (lobbyist.regNum) {
+                drawField(page1, 'Registration #', lobbyist.regNum, margin + 280, y, 80, 150);
+            }
+            y -= 40;
+
+            drawField(page1, 'Address Line 1', lobbyist.address1 || lobbyist.address, margin, y, 80, contentWidth);
+            y -= 40;
+
+            if (lobbyist.address2) {
+                drawField(page1, 'Address Line 2', lobbyist.address2, margin, y, 80, contentWidth);
+                y -= 40;
+            }
+
+            drawField(page1, 'City', lobbyist.city, margin, y, 40, 180);
+            drawField(page1, 'State', lobbyist.state, margin + 200, y, 40, 60);
+            drawField(page1, 'ZIP', lobbyist.zip, margin + 280, y, 30, 80);
+            y -= 40;
+
+            drawField(page1, 'Phone', lobbyist.phone, margin, y, 50, 150);
+            drawField(page1, 'Email', lobbyist.email, margin + 180, y, 50, 250);
+            y -= 40;
+
+            drawField(page1, 'Employer', lobbyist.employer, margin, y, 60, contentWidth);
+            y -= 50;
+
+            // Section: Association Information
+            page1.drawRectangle({ x: margin, y: y - 5, width: contentWidth, height: 20, color: headerBg });
+            page1.drawText('ASSOCIATION / PRINCIPAL INFORMATION', { x: margin + 10, y: y, size: 11, font: fontBold, color: white });
+            y -= 30;
+
+            drawField(page1, 'Organization Name', org.name, margin, y, 100, contentWidth);
+            if (org.entityId) {
+                page1.drawText('Entity ID: ' + sanitize(org.entityId), { x: margin + 400, y: y, size: 8, font: font, color: gray });
+            }
+            y -= 40;
+
+            drawField(page1, 'Address', org.address, margin, y, 60, contentWidth);
+            y -= 40;
+
+            drawField(page1, 'City', org.city, margin, y, 40, 180);
+            drawField(page1, 'State', org.state, margin + 200, y, 40, 60);
+            drawField(page1, 'ZIP', org.zip, margin + 280, y, 30, 80);
+            drawField(page1, 'Phone', org.phone, margin + 380, y, 50, 130);
+            y -= 40;
+
+            drawField(page1, 'Website', org.website, margin, y, 60, contentWidth);
+            y -= 45;
+
+            // Association Contact
+            page1.drawText('Association Contact:', { x: margin, y: y, size: 10, font: fontBold, color: black });
+            y -= 25;
+
+            drawField(page1, 'Name & Title', org.contactName, margin, y, 80, contentWidth);
+            y -= 40;
+
+            drawField(page1, 'Email', org.contactEmail, margin, y, 50, 250);
+            drawField(page1, 'Phone', org.contactPhone, margin + 280, y, 50, 150);
+            y -= 50;
+
+            // Officers and Directors
+            var officers = (org.officers || []).slice(0, 5);
+            if (officers.length > 0) {
+                page1.drawText('Officers and Directors:', { x: margin, y: y, size: 10, font: fontBold, color: black });
+                y -= 20;
+
+                for (var i = 0; i < officers.length; i++) {
+                    page1.drawText((i + 1) + '. ' + sanitize(officers[i].name), { x: margin + 10, y: y, size: 9, font: font, color: black });
+                    if (officers[i].address) {
+                        page1.drawText(sanitize(officers[i].address), { x: margin + 250, y: y, size: 9, font: font, color: gray });
+                    }
+                    y -= 15;
+                }
+            }
+
+            // ========== PAGE 2 ==========
+            var page2 = pdfDoc.addPage([pageWidth, pageHeight]);
+            y = pageHeight - margin;
+
+            // Header
+            page2.drawRectangle({ x: 0, y: pageHeight - 60, width: pageWidth, height: 60, color: headerBg });
+            page2.drawText('Minnesota Lobbyist Registration - Page 2', { x: margin, y: pageHeight - 35, size: 16, font: fontBold, color: white });
+            page2.drawText(sanitize(lobbyist.name) + ' | ' + sanitize(org.name), { x: margin, y: pageHeight - 52, size: 10, font: font, color: white });
+
+            y = pageHeight - 90;
+
+            // Section: Designated Lobbyist
+            page2.drawRectangle({ x: margin, y: y - 5, width: contentWidth, height: 20, color: headerBg });
+            page2.drawText('DESIGNATED LOBBYIST', { x: margin + 10, y: y, size: 11, font: fontBold, color: white });
+            y -= 35;
+
+            page2.drawRectangle({ x: margin, y: y - 3, width: 12, height: 12, borderColor: black, borderWidth: 1 });
+            if (isDesignatedLobbyist) page2.drawText('X', { x: margin + 2, y: y - 1, size: 10, font: fontBold, color: black });
+            page2.drawText('I am the association\'s designated lobbyist', { x: margin + 20, y: y, size: 10, font: font, color: black });
+            y -= 40;
+
+            // Section: Reporting Status
+            page2.drawRectangle({ x: margin, y: y - 5, width: contentWidth, height: 20, color: headerBg });
+            page2.drawText('REPORTING STATUS', { x: margin + 10, y: y, size: 11, font: fontBold, color: white });
+            y -= 35;
+
+            // Self-reporting
+            page2.drawRectangle({ x: margin, y: y - 3, width: 12, height: 12, borderColor: black, borderWidth: 1 });
+            if (reportingType === 'self') page2.drawText('X', { x: margin + 2, y: y - 1, size: 10, font: fontBold, color: black });
+            page2.drawText('I will be reporting my lobbying activity directly to the Board.', { x: margin + 20, y: y, size: 10, font: font, color: black });
+            y -= 25;
+
+            // Authorizing another
+            page2.drawRectangle({ x: margin, y: y - 3, width: 12, height: 12, borderColor: black, borderWidth: 1 });
+            if (reportingType === 'authorizing') page2.drawText('X', { x: margin + 2, y: y - 1, size: 10, font: fontBold, color: black });
+            page2.drawText('I authorize the following lobbyist to report my lobbying activity for this association:', { x: margin + 20, y: y, size: 10, font: font, color: black });
+            y -= 22;
+
+            // Always show the fields for authorized lobbyist name and reg number
+            page2.drawText('Name:', { x: margin + 30, y: y, size: 9, font: fontBold, color: gray });
+            page2.drawLine({ start: { x: margin + 70, y: y - 3 }, end: { x: margin + 280, y: y - 3 }, thickness: 0.5, color: lightGray });
+            if (reportingType === 'authorizing' && authLobbyist) {
+                page2.drawText(sanitize(authLobbyist.name), { x: margin + 72, y: y, size: 9, font: font, color: black });
+            }
+            y -= 18;
+
+            page2.drawText('Registration #:', { x: margin + 30, y: y, size: 9, font: fontBold, color: gray });
+            page2.drawLine({ start: { x: margin + 110, y: y - 3 }, end: { x: margin + 220, y: y - 3 }, thickness: 0.5, color: lightGray });
+            if (reportingType === 'authorizing' && authLobbyist && authLobbyist.regNum) {
+                page2.drawText(sanitize(authLobbyist.regNum), { x: margin + 112, y: y, size: 9, font: font, color: black });
+            }
+            y -= 25;
+
+            // Reporting for others
+            page2.drawRectangle({ x: margin, y: y - 3, width: 12, height: 12, borderColor: black, borderWidth: 1 });
+            if (reportingType === 'reporting') page2.drawText('X', { x: margin + 2, y: y - 1, size: 10, font: fontBold, color: black });
+            page2.drawText('I am authorized to report the lobbying activity for the following registered', { x: margin + 20, y: y, size: 10, font: font, color: black });
+            y -= 15;
+            page2.drawText('lobbyist(s) for this association:', { x: margin + 20, y: y, size: 10, font: font, color: black });
+            y -= 18;
+            if (reportingType === 'reporting' && reportingFor && reportingFor.length > 0) {
+                var reportingNames = reportingFor.map(function(l) {
+                    return sanitize(l.name) + (l.regNum ? ' (#' + sanitize(l.regNum) + ')' : '');
+                }).join(', ');
+                page2.drawText(reportingNames, { x: margin + 30, y: y, size: 9, font: font, color: gray });
+            }
+            y -= 40;
+
+            // Section: Lobbying Categories
+            page2.drawRectangle({ x: margin, y: y - 5, width: contentWidth, height: 20, color: headerBg });
+            page2.drawText('LOBBYING CATEGORIES', { x: margin + 10, y: y, size: 11, font: fontBold, color: white });
+            y -= 30;
+
+            // Table header
+            var colX = [margin, margin + 180, margin + 260, margin + 330, margin + 420];
+            page2.drawRectangle({ x: margin, y: y - 5, width: contentWidth, height: 18, color: lightGray });
+            page2.drawText('Category', { x: colX[0] + 5, y: y, size: 9, font: fontBold, color: black });
+            page2.drawText('Legislative', { x: colX[1], y: y, size: 8, font: fontBold, color: black });
+            page2.drawText('Administrative', { x: colX[2], y: y, size: 8, font: fontBold, color: black });
+            page2.drawText('Political Sub.', { x: colX[3], y: y, size: 8, font: fontBold, color: black });
+            page2.drawText('MN PUC', { x: colX[4], y: y, size: 8, font: fontBold, color: black });
+            y -= 20;
+
+            var cats = categories || [];
+            for (var i = 0; i < cats.length; i++) {
+                if (y < 100) break; // Don't overflow page
+
+                page2.drawText(sanitize(cats[i].name), { x: colX[0] + 5, y: y, size: 8, font: font, color: black });
+                if (cats[i].legislative) page2.drawText('Yes', { x: colX[1] + 15, y: y, size: 8, font: font, color: black });
+                if (cats[i].administrative) page2.drawText('Yes', { x: colX[2] + 20, y: y, size: 8, font: font, color: black });
+                if (cats[i].political) page2.drawText('Yes', { x: colX[3] + 20, y: y, size: 8, font: font, color: black });
+                if (cats[i].puc) page2.drawText('Yes', { x: colX[4] + 10, y: y, size: 8, font: font, color: black });
+
+                page2.drawLine({ start: { x: margin, y: y - 5 }, end: { x: margin + contentWidth, y: y - 5 }, thickness: 0.5, color: lightGray });
+                y -= 16;
+            }
+
+            if (cats.length === 0) {
+                page2.drawText('No categories selected', { x: margin + 5, y: y, size: 9, font: font, color: gray });
+                y -= 20;
+            }
+
+            y -= 20;
+
+            // Section: Officers and Directors of Association Represented (required by Minn. Stat. § 10A.03, subd. 2 (6))
+            var officersPage2 = org.officers || [];
+            page2.drawRectangle({ x: margin, y: y - 5, width: contentWidth, height: 20, color: headerBg });
+            page2.drawText('OFFICERS AND DIRECTORS OF ASSOCIATION REPRESENTED', { x: margin + 10, y: y, size: 11, font: fontBold, color: white });
+            y -= 30;
+
+            if (officersPage2.length === 0) {
+                page2.drawText('No officers or directors listed', { x: margin + 5, y: y, size: 9, font: font, color: gray });
+                y -= 20;
+            } else {
+                // Table header
+                page2.drawRectangle({ x: margin, y: y - 5, width: contentWidth, height: 18, color: lightGray });
+                page2.drawText('Name and Title', { x: margin + 5, y: y, size: 9, font: fontBold, color: black });
+                page2.drawText('Address', { x: margin + 250, y: y, size: 9, font: fontBold, color: black });
+                y -= 20;
+
+                for (var oi = 0; oi < officersPage2.length; oi++) {
+                    if (y < 100) break; // Don't overflow page
+
+                    var officer = officersPage2[oi];
+                    page2.drawText(sanitize(officer.name || ''), { x: margin + 5, y: y, size: 8, font: font, color: black });
+                    page2.drawText(sanitize(officer.address || ''), { x: margin + 250, y: y, size: 8, font: font, color: black });
+                    page2.drawLine({ start: { x: margin, y: y - 5 }, end: { x: margin + contentWidth, y: y - 5 }, thickness: 0.5, color: lightGray });
+                    y -= 16;
+                }
+            }
+
+            y -= 20;
+
+            // Certification
+            if (y > 120) {
+                page2.drawRectangle({ x: margin, y: y - 5, width: contentWidth, height: 20, color: headerBg });
+                page2.drawText('CERTIFICATION', { x: margin + 10, y: y, size: 11, font: fontBold, color: white });
+                y -= 35;
+
+                page2.drawText('I, ' + sanitize(lobbyist.name) + ', certify that the information contained on this form is', { x: margin, y: y, size: 10, font: font, color: black });
+                y -= 15;
+                page2.drawText('complete, true, and correct.', { x: margin, y: y, size: 10, font: font, color: black });
+                y -= 40;
+
+                // Embed signature image if one is selected
+                if (signatureFile) {
+                    try {
+                        var sigUrl = SIGNATURE_BASE_URL + signatureFile;
+                        var sigResponse = await fetch(sigUrl);
+                        if (sigResponse.ok) {
+                            var sigBytes = await sigResponse.arrayBuffer();
+                            var sigImage = await pdfDoc.embedPng(sigBytes);
+                            var sigDims = sigImage.scale(0.5); // Adjust scale as needed
+                            // Cap the signature size
+                            var maxHeight = 40;
+                            var maxWidth = 150;
+                            var scale = Math.min(maxWidth / sigImage.width, maxHeight / sigImage.height, 0.5);
+                            var sigWidth = sigImage.width * scale;
+                            var sigHeight = sigImage.height * scale;
+                            page2.drawImage(sigImage, {
+                                x: margin + 70,
+                                y: y - sigHeight + 15,
+                                width: sigWidth,
+                                height: sigHeight
+                            });
+                        }
+                    } catch (sigErr) {
+                        console.log('Could not load signature:', sigErr);
+                    }
+                }
+
+                page2.drawText('Signature: _______________________________', { x: margin, y: y, size: 10, font: font, color: black });
+                page2.drawText('Date: ' + formDate.toLocaleDateString(), { x: margin + 320, y: y, size: 10, font: font, color: black });
+            }
+
+            // Footer on both pages
+            var footerText = 'Minnesota Campaign Finance and Public Disclosure Board';
+            page1.drawText(footerText, { x: margin, y: 25, size: 8, font: font, color: gray });
+            page2.drawText(footerText, { x: margin, y: 25, size: 8, font: font, color: gray });
+
+            return await pdfDoc.save();
+        }
+
+        // ===== CFB SYNC =====
+        async function syncFromCFB() {
+            var status = document.getElementById('syncStatus');
+            status.textContent = 'Syncing...';
+
+            try {
+                var proxyUrl = 'https://api.allorigins.win/raw?url=';
+                var cfbUrl = 'https://cfb.mn.gov/reports-and-data/self-help/data-downloads/lobbying/?download=-161966777';
+
+                var response = await fetch(proxyUrl + encodeURIComponent(cfbUrl));
+                if (!response.ok) throw new Error('Failed to fetch');
+
+                var csv = await response.text();
+                var lines = csv.split('\n');
+
+                var existingLobbyists = getLobbyists();
+                var existingOrgs = getOrganizations();
+                var existingRegNums = {};
+                for (var i = 0; i < existingLobbyists.length; i++) {
+                    if (existingLobbyists[i].regNum) existingRegNums[existingLobbyists[i].regNum] = true;
+                }
+                var existingOrgNames = {};
+                for (var i = 0; i < existingOrgs.length; i++) {
+                    existingOrgNames[(existingOrgs[i].name || '').toLowerCase()] = true;
+                }
+
+                var newLobbyists = 0, newOrgs = 0;
+                var orgMap = {};
+
+                for (var i = 1; i < lines.length; i++) {
+                    var fields = parseCSV(lines[i]);
+                    if (fields.length < 15) continue;
+
+                    var regNum = fields[0];
+                    var name = fields[1];
+                    var formattedName = fields[2];
+                    var associations = fields[3];
+                    var addr = fields[8];
+                    var street = fields[9];
+                    var city = fields[10];
+                    var state = fields[11];
+                    var zip = fields[12];
+                    var phone = fields[13];
+                    var email = fields[14];
+
+                    if (regNum && !existingRegNums[regNum]) {
+                        existingLobbyists.push({
+                            id: Date.now().toString() + Math.random().toString(36).substr(2),
+                            regNum: sanitize(regNum),
+                            name: sanitize(formattedName || name),
+                            email: sanitize(email),
+                            phone: sanitize(phone),
+                            employer: sanitize(addr),
+                            address1: sanitize(street || addr),
+                            address2: '',
+                            city: sanitize(city),
+                            state: sanitize(state) || 'MN',
+                            zip: sanitize(zip),
+                            fromCFB: true
+                        });
+                        existingRegNums[regNum] = true;
+                        newLobbyists++;
+                    }
+
+                    var regex = /\((\d+)\)\s*([^;]+)/g;
+                    var match;
+                    while ((match = regex.exec(associations || '')) !== null) {
+                        var orgName = sanitize(match[2].trim());
+                        var lower = orgName.toLowerCase();
+                        if (orgName && !existingOrgNames[lower] && !orgMap[lower]) {
+                            orgMap[lower] = {
+                                id: Date.now().toString() + Math.random().toString(36).substr(2),
+                                entityId: match[1],
+                                name: orgName,
+                                address: '', city: '', state: 'MN', zip: '', phone: '', website: '',
+                                contactName: '', contactEmail: '', contactPhone: '',
+                                officers: [], categories: [],
+                                fromCFB: true
+                            };
+                        }
+                    }
+                }
+
+                for (var key in orgMap) {
+                    existingOrgs.push(orgMap[key]);
+                    newOrgs++;
+                }
+
+                saveLobbyistsData(existingLobbyists);
+                saveOrganizationsData(existingOrgs);
+
+                status.textContent = 'Added ' + newLobbyists + ' lobbyists, ' + newOrgs + ' organizations';
+                renderLobbyists();
+                renderOrganizations();
+
+            } catch (err) {
+                console.error(err);
+                status.textContent = 'Sync failed: ' + err.message;
+            }
+        }
+
+        function parseCSV(line) {
+            var result = [];
+            var current = '';
+            var inQuotes = false;
+            for (var i = 0; i < line.length; i++) {
+                var c = line[i];
+                if (c === '"' && inQuotes && line[i+1] === '"') { current += '"'; i++; }
+                else if (c === '"') inQuotes = !inQuotes;
+                else if (c === ',' && !inQuotes) { result.push(current.trim()); current = ''; }
+                else current += c;
+            }
+            result.push(current.trim());
+            return result;
+        }
+
+        // ===== EVENT DELEGATION =====
+        document.addEventListener('click', function(e) {
+            var target = e.target;
+
+            // Tab clicks
+            if (target.classList.contains('tab')) {
+                var tabName = target.getAttribute('data-tab');
+                if (tabName) showTab(tabName);
+            }
+
+            // Lobbyist edit/delete
+            if (target.hasAttribute('data-edit-lobbyist')) {
+                editLobbyist(target.getAttribute('data-edit-lobbyist'));
+            }
+            if (target.hasAttribute('data-delete-lobbyist')) {
+                deleteLobbyist(target.getAttribute('data-delete-lobbyist'));
+            }
+
+            // Organization edit/delete
+            if (target.hasAttribute('data-edit-org')) {
+                editOrganization(target.getAttribute('data-edit-org'));
+            }
+            if (target.hasAttribute('data-delete-org')) {
+                deleteOrganization(target.getAttribute('data-delete-org'));
+            }
+
+            // Remove officer
+            if (target.hasAttribute('data-remove-officer')) {
+                var row = target.closest('.officer-row');
+                if (row) row.remove();
+            }
+
+            // Download PDF
+            if (target.hasAttribute('data-download-pdf')) {
+                var idx = parseInt(target.getAttribute('data-download-pdf'));
+                downloadPDF(idx);
+            }
+
+            // Organization search dropdown selection
+            if (target.hasAttribute('data-org-id') || target.closest('[data-org-id]')) {
+                var item = target.hasAttribute('data-org-id') ? target : target.closest('[data-org-id]');
+                var orgId = item.getAttribute('data-org-id');
+                selectOrganization(orgId);
+            }
+
+            // Lobbyist search dropdown selection
+            if (target.hasAttribute('data-lobbyist-id') || target.closest('[data-lobbyist-id]')) {
+                var item = target.hasAttribute('data-lobbyist-id') ? target : target.closest('[data-lobbyist-id]');
+                var lobbyistId = item.getAttribute('data-lobbyist-id');
+                addLobbyistToSelection(lobbyistId);
+            }
+
+            // Clear selected organization
+            if (target.hasAttribute('data-clear-org')) {
+                document.getElementById('selectOrg').value = '';
+                document.getElementById('selectedOrgDisplay').innerHTML = '';
+            }
+
+            // Remove lobbyist from selection
+            if (target.hasAttribute('data-remove-lobbyist')) {
+                var id = target.getAttribute('data-remove-lobbyist');
+                removeLobbyistFromSelection(id);
+            }
+
+            // Reporting-for dropdown selection
+            if (target.hasAttribute('data-reporting-for-add') || target.closest('[data-reporting-for-add]')) {
+                var item = target.hasAttribute('data-reporting-for-add') ? target : target.closest('[data-reporting-for-add]');
+                var forLobbyistId = item.getAttribute('data-reporting-for-add');
+                var addLobbyistId = item.getAttribute('data-add-lobbyist');
+                addReportingForLobbyist(forLobbyistId, addLobbyistId);
+            }
+
+            // Remove from reporting-for selection
+            if (target.hasAttribute('data-reporting-for-remove')) {
+                var forLobbyistId = target.getAttribute('data-reporting-for-remove');
+                var removeId = target.getAttribute('data-remove-id');
+                removeReportingForLobbyist(forLobbyistId, removeId);
+            }
+
+            // Auth lobbyist search dropdown selection
+            if (target.hasAttribute('data-auth-select-for') || target.closest('[data-auth-select-for]')) {
+                var item = target.hasAttribute('data-auth-select-for') ? target : target.closest('[data-auth-select-for]');
+                var forLobbyistId = item.getAttribute('data-auth-select-for');
+                var authId = item.getAttribute('data-auth-select-id');
+                selectAuthLobbyist(forLobbyistId, authId);
+            }
+
+            // Clear auth lobbyist selection
+            if (target.hasAttribute('data-clear-auth-for')) {
+                var forLobbyistId = target.getAttribute('data-clear-auth-for');
+                clearAuthLobbyist(forLobbyistId);
+            }
+        });
+
+        // Handle checkbox changes for lobbyist selection
+        document.addEventListener('change', function(e) {
+            var target = e.target;
+
+            // Lobbyist checkbox toggle
+            if (target.hasAttribute('data-select-lobbyist')) {
+                var id = target.getAttribute('data-select-lobbyist');
+                var options = document.querySelector('[data-options-for="' + id + '"]');
+                if (options) {
+                    if (target.checked) {
+                        options.classList.add('visible');
+                    } else {
+                        options.classList.remove('visible');
+                    }
+                }
+            }
+
+            // Reporting type change
+            if (target.hasAttribute('data-reporting-type')) {
+                var id = target.getAttribute('data-reporting-type');
+                var value = target.value;
+                var authSection = document.querySelector('[data-auth-section="' + id + '"]');
+                var reportingSection = document.querySelector('[data-reporting-section="' + id + '"]');
+
+                if (authSection) authSection.style.display = 'none';
+                if (reportingSection) reportingSection.style.display = 'none';
+
+                if (value === 'authorizing' && authSection) {
+                    authSection.style.display = 'block';
+                } else if (value === 'reporting' && reportingSection) {
+                    reportingSection.style.display = 'block';
+                }
+            }
+        });
+
+        // ===== LOGIN =====
+        function handleLogin(e) {
+            e.preventDefault();
+            var username = document.getElementById('loginUsername').value;
+            var password = document.getElementById('loginPassword').value;
+
+            if (username === VALID_USERNAME && password === VALID_PASSWORD) {
+                document.getElementById('loginScreen').style.display = 'none';
+                sessionStorage.setItem('mn_lobbyist_logged_in', 'true');
+            } else {
+                document.getElementById('loginError').style.display = 'block';
+            }
+        }
+
+        function checkLogin() {
+            if (sessionStorage.getItem('mn_lobbyist_logged_in') === 'true') {
+                document.getElementById('loginScreen').style.display = 'none';
+            }
+        }
+
+        // ===== INIT =====
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if already logged in
+            checkLogin();
+
+            // Login form handler
+            document.getElementById('loginForm').addEventListener('submit', handleLogin);
+
+            renderLobbyists();
+            renderOrganizations();
+
+            // Form submissions
+            document.getElementById('lobbyistForm').addEventListener('submit', saveLobbyist);
+            document.getElementById('orgForm').addEventListener('submit', saveOrganization);
+
+            // Buttons
+            document.getElementById('clearLobbyistBtn').addEventListener('click', clearLobbyistForm);
+            document.getElementById('clearOrgBtn').addEventListener('click', clearOrgForm);
+            document.getElementById('addOfficerBtn').addEventListener('click', function() { addOfficer('', ''); });
+            document.getElementById('syncBtn').addEventListener('click', syncFromCFB);
+            document.getElementById('generateBtn').addEventListener('click', generatePDFs);
+            document.getElementById('lookupCFBBtn').addEventListener('click', function() {
+                var entityId = document.getElementById('orgEntityId').value.trim();
+                if (!entityId) {
+                    alert('Please enter an Entity ID first');
+                    return;
+                }
+                var url = 'https://cfb.mn.gov/reports-and-data/viewers/lobbying/lobbying-organizations/' + entityId + '/2025.1/';
+                window.open(url, '_blank');
+                document.getElementById('cfbLookupHelp').style.display = 'block';
+            });
+            document.getElementById('searchCFBOrgsBtn').addEventListener('click', function() {
+                window.open('https://cfb.mn.gov/reports-and-data/viewers/lobbying/lobbying-organizations/', '_blank');
+                document.getElementById('cfbSearchHelp').style.display = 'block';
+            });
+
+            // Search inputs for Lobbyists and Organizations tabs
+            document.getElementById('lobbyistSearch').addEventListener('input', renderLobbyists);
+            document.getElementById('orgSearch').addEventListener('input', renderOrganizations);
+
+            // Search inputs for Generate Forms tab
+            document.getElementById('orgSearchInput').addEventListener('input', function(e) {
+                searchOrganizations(e.target.value);
+            });
+            document.getElementById('lobbyistSearchInput').addEventListener('input', function(e) {
+                searchLobbyists(e.target.value);
+            });
+
+            // Close dropdowns when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.search-dropdown')) {
+                    document.querySelectorAll('.search-dropdown-list').forEach(function(dropdown) {
+                        dropdown.classList.remove('visible');
+                    });
+                }
+            });
+
+            // Input handler for reporting-for search (delegated)
+            document.addEventListener('input', function(e) {
+                if (e.target.hasAttribute('data-reporting-for-search')) {
+                    var forLobbyistId = e.target.getAttribute('data-reporting-for-search');
+                    searchReportingForLobbyists(forLobbyistId, e.target.value);
+                }
+                // Input handler for auth lobbyist search
+                if (e.target.hasAttribute('data-auth-lobbyist-search')) {
+                    var forLobbyistId = e.target.getAttribute('data-auth-lobbyist-search');
+                    searchAuthLobbyists(forLobbyistId, e.target.value);
+                }
+            });
+
+            // Org select
+            document.getElementById('selectOrg').addEventListener('change', renderLobbyistSelect);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MN Lobbyist Report Form Filler</title>
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        header { background: #1a5f2a; color: white; padding: 20px; margin-bottom: 20px; }
+        header h1 { font-size: 1.5em; }
+        header p { font-size: 0.9em; opacity: 0.9; margin-top: 5px; }
+
+        .tabs { display: flex; gap: 5px; margin-bottom: 0; flex-wrap: wrap; }
+        .tab { padding: 12px 24px; background: #ddd; border: none; cursor: pointer; border-radius: 6px 6px 0 0; font-size: 0.9em; }
+        .tab.active { background: #1a5f2a; color: white; }
+        .tab-content { display: none; background: white; padding: 25px; border-radius: 0 6px 6px 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .tab-content.active { display: block; }
+
+        h2 { color: #1a5f2a; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        h3 { margin: 20px 0 10px; color: #444; }
+        h4 { margin: 15px 0 8px; color: #555; font-size: 0.95em; }
+
+        .form-row { display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; }
+        .form-group { flex: 1; min-width: 200px; }
+        .form-group.full { flex-basis: 100%; }
+        .form-group.half { flex: 0 0 48%; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.9em; color: #555; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 1em; }
+        .form-group textarea { min-height: 80px; resize: vertical; }
+
+        button { padding: 10px 20px; background: #1a5f2a; color: white; border: none; border-radius: 4px; cursor: pointer; margin-right: 10px; margin-top: 10px; }
+        button:hover { background: #2a7f3a; }
+        button.secondary { background: #666; }
+        button.danger { background: #c0392b; }
+        button.success { background: #27ae60; }
+
+        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; background: #f9f9f9; border: 1px solid #eee; border-radius: 4px; margin-bottom: 8px; }
+        .list-item h4 { margin: 0 0 4px; }
+        .list-item p { margin: 0; font-size: 0.85em; color: #666; }
+        .list-item button { margin: 0 0 0 8px; padding: 6px 12px; font-size: 0.85em; }
+
+        .reg-badge { background: #1a5f2a; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.75em; margin-right: 8px; }
+
+        .empty { text-align: center; padding: 30px; color: #888; }
+        .search-box { margin-bottom: 15px; }
+        .search-box input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
+
+        .checkbox-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; margin: 15px 0; }
+        .checkbox-item { display: flex; align-items: flex-start; gap: 8px; padding: 10px; background: #f9f9f9; border-radius: 4px; }
+        .checkbox-item input[type="checkbox"] { margin-top: 3px; width: 18px; height: 18px; flex-shrink: 0; }
+        .checkbox-item label { font-size: 0.9em; cursor: pointer; }
+        .checkbox-item small { display: block; color: #666; font-size: 0.8em; margin-top: 3px; }
+
+        .schedule-section { background: #f5f9f5; border: 1px solid #c5e1c5; border-radius: 6px; padding: 20px; margin: 20px 0; }
+        .schedule-section h3 { color: #1a5f2a; margin-top: 0; }
+        .schedule-section.collapsed .schedule-content { display: none; }
+        .schedule-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        .schedule-header h3 { margin: 0; }
+
+        .activity-entry { background: white; border: 1px solid #ddd; border-radius: 4px; padding: 15px; margin-bottom: 15px; }
+        .activity-entry .remove-btn { float: right; }
+
+        .category-select { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; margin: 10px 0; }
+        .category-select label { display: flex; align-items: center; gap: 6px; padding: 6px 10px; background: #fff; border: 1px solid #ddd; border-radius: 4px; font-size: 0.85em; cursor: pointer; }
+        .category-select label:hover { background: #f0f7f0; }
+        .category-select input[type="checkbox"] { width: 16px; height: 16px; }
+
+        .search-dropdown { position: relative; }
+        .search-dropdown input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 1em; }
+        .search-dropdown-list { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #ddd; border-top: none; border-radius: 0 0 4px 4px; max-height: 200px; overflow-y: auto; z-index: 100; display: none; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .search-dropdown-list.visible { display: block; }
+        .search-dropdown-item { padding: 10px 12px; cursor: pointer; border-bottom: 1px solid #eee; }
+        .search-dropdown-item:hover { background: #f0f7f0; }
+        .search-dropdown-item:last-child { border-bottom: none; }
+        .selected-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: #e8f5e9; border: 1px solid #a5d6a7; border-radius: 4px; margin-top: 8px; }
+        .selected-item button { background: #c0392b; padding: 4px 10px; margin: 0; font-size: 0.85em; }
+
+        .gift-table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        .gift-table th { background: #1a5f2a; color: white; padding: 10px; text-align: left; font-size: 0.85em; }
+        .gift-table td { padding: 8px; border-bottom: 1px solid #eee; }
+        .gift-table input, .gift-table select { width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 3px; font-size: 0.9em; }
+        .gift-table .remove-row { background: #c0392b; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; }
+
+        .status { padding: 12px; border-radius: 4px; margin-bottom: 15px; }
+        .status.success { background: #d4edda; color: #155724; }
+        .status.error { background: #f8d7da; color: #721c24; }
+        .status.info { background: #cce5ff; color: #004085; }
+
+        .generated-forms { margin-top: 20px; }
+        .generated-form-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 15px; background: #d4edda; border: 1px solid #c3e6cb; border-radius: 4px; margin-bottom: 8px; }
+        .generated-form-item button { background: #28a745; margin: 0; }
+
+        .period-selector { display: flex; gap: 20px; align-items: center; padding: 15px; background: #e8f5e9; border-radius: 6px; margin-bottom: 20px; }
+        .period-selector label { font-weight: 600; }
+        .period-selector select { padding: 8px 12px; font-size: 1em; }
+
+        .info-box { background: #fff3cd; border: 1px solid #ffc107; padding: 12px; border-radius: 4px; margin: 15px 0; font-size: 0.9em; }
+        .info-box strong { color: #856404; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Minnesota Lobbyist Report Form Filler</h1>
+            <p>For Designated Reporting Lobbyists - Generate reports due January 15 and June 15</p>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="tabs">
+            <button class="tab active" data-tab="lobbyists">Lobbyists</button>
+            <button class="tab" data-tab="associations">Associations</button>
+            <button class="tab" data-tab="report">Create Report</button>
+        </div>
+
+        <!-- Lobbyists Tab -->
+        <div id="lobbyists-tab" class="tab-content active">
+            <h2>Manage Lobbyists</h2>
+            <div class="search-box">
+                <input type="text" id="lobbyistSearch" placeholder="Search lobbyists...">
+            </div>
+            <h3>Add/Edit Lobbyist</h3>
+            <form id="lobbyistForm">
+                <input type="hidden" id="lobbyistId">
+                <div class="form-row">
+                    <div class="form-group"><label>Reg # *</label><input type="text" id="lobbyistRegNum" required></div>
+                    <div class="form-group"><label>Full Name *</label><input type="text" id="lobbyistName" required></div>
+                    <div class="form-group"><label>Email *</label><input type="email" id="lobbyistEmail" required></div>
+                    <div class="form-group"><label>Phone *</label><input type="tel" id="lobbyistPhone" required></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group full"><label>Address *</label><input type="text" id="lobbyistAddress" required></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>City *</label><input type="text" id="lobbyistCity" required></div>
+                    <div class="form-group"><label>State *</label><input type="text" id="lobbyistState" value="MN" required></div>
+                    <div class="form-group"><label>ZIP *</label><input type="text" id="lobbyistZip" required></div>
+                </div>
+                <button type="submit" class="success">Save Lobbyist</button>
+                <button type="button" class="secondary" id="clearLobbyistBtn">Clear</button>
+                <button type="button" class="secondary" id="importFromRegBtn">Import from Registration App</button>
+            </form>
+            <h3>Saved Lobbyists</h3>
+            <div id="lobbyistList"></div>
+        </div>
+
+        <!-- Associations Tab -->
+        <div id="associations-tab" class="tab-content">
+            <h2>Manage Associations</h2>
+            <div class="search-box">
+                <input type="text" id="assocSearch" placeholder="Search associations...">
+            </div>
+            <h3>Add/Edit Association</h3>
+            <form id="assocForm">
+                <input type="hidden" id="assocId">
+                <div class="form-row">
+                    <div class="form-group"><label>Reg #</label><input type="text" id="assocRegNum"></div>
+                    <div class="form-group full"><label>Association Name *</label><input type="text" id="assocName" required></div>
+                </div>
+                <h4>Officers and Directors</h4>
+                <div id="officersList"></div>
+                <button type="button" class="secondary" id="addOfficerBtn">+ Add Officer/Director</button>
+                <div style="margin-top: 15px;">
+                    <button type="submit" class="success">Save Association</button>
+                    <button type="button" class="secondary" id="clearAssocBtn">Clear</button>
+                    <button type="button" class="secondary" id="importOrgsBtn">Import from Registration App</button>
+                </div>
+            </form>
+            <h3>Saved Associations</h3>
+            <div id="assocList"></div>
+        </div>
+
+        <!-- Create Report Tab -->
+        <div id="report-tab" class="tab-content">
+            <h2>Create Lobbyist Report</h2>
+            <div id="reportStatus"></div>
+
+            <!-- Reporting Period -->
+            <div class="period-selector">
+                <label>Reporting Period:</label>
+                <select id="reportPeriod">
+                    <option value="jan2026">Due January 15, 2026 (Jun 1 - Dec 31, 2025)</option>
+                    <option value="jun2026">Due June 15, 2026 (Jan 1 - May 31, 2026)</option>
+                    <option value="jan2025">Due January 15, 2025 (Jun 1 - Dec 31, 2024)</option>
+                    <option value="jun2025">Due June 15, 2025 (Jan 1 - May 31, 2025)</option>
+                </select>
+            </div>
+
+            <!-- Select Lobbyist -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Reporting Lobbyist *</label>
+                    <div class="search-dropdown">
+                        <input type="text" id="reportLobbyistSearch" placeholder="Search lobbyists..." autocomplete="off">
+                        <div class="search-dropdown-list" id="reportLobbyistDropdown"></div>
+                    </div>
+                    <div id="selectedReportLobbyist"></div>
+                    <input type="hidden" id="selectedLobbyistId">
+                </div>
+                <div class="form-group">
+                    <label>Association Represented *</label>
+                    <div class="search-dropdown">
+                        <input type="text" id="reportAssocSearch" placeholder="Search associations..." autocomplete="off">
+                        <div class="search-dropdown-list" id="reportAssocDropdown"></div>
+                    </div>
+                    <div id="selectedReportAssoc"></div>
+                    <input type="hidden" id="selectedAssocId">
+                </div>
+            </div>
+
+            <!-- Termination -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label><input type="checkbox" id="isTerminating"> Check if terminating registration</label>
+                </div>
+                <div class="form-group" id="terminationDateGroup" style="display:none;">
+                    <label>Date of Termination</label>
+                    <input type="date" id="terminationDate">
+                </div>
+            </div>
+
+            <!-- Main Checkboxes -->
+            <h3>Report Type (Check all that apply)</h3>
+            <div class="checkbox-grid">
+                <div class="checkbox-item">
+                    <input type="checkbox" id="chk1">
+                    <label for="chk1">No lobbying efforts<small>No lobbying made during this period</small></label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="chk2">
+                    <label for="chk2">Legislative action<small>Schedule A required</small></label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="chk3">
+                    <label for="chk3">Administrative action<small>Schedule A required</small></label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="chk4">
+                    <label for="chk4">MN Public Utilities Commission<small>Schedule A required</small></label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="chk5">
+                    <label for="chk5">Political subdivision action<small>Schedule A required</small></label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="chk6">
+                    <label for="chk6">Gift/benefit to official ($5+)<small>Schedule B required</small></label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="chk7">
+                    <label for="chk7">Received $500+ from another entity<small>Schedule C required</small></label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="chk8">
+                    <label for="chk8">Expert witness used<small>Schedule D required</small></label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="chk9">
+                    <label for="chk9">Finance professional used<small>Schedule E required</small></label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="chk10">
+                    <label for="chk10">Reporting for other lobbyists<small>Schedule G required</small></label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="chk11">
+                    <label for="chk11">Lobbyist failed to provide disclosure<small>Attach names</small></label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="chk12">
+                    <label for="chk12">Amending previous report<small>Enter original date</small></label>
+                </div>
+            </div>
+
+            <div id="amendDateGroup" style="display:none;" class="form-row">
+                <div class="form-group">
+                    <label>Date of Original Report Being Amended</label>
+                    <input type="date" id="amendDate">
+                </div>
+            </div>
+
+            <!-- Schedule A: Legislative Lobbying -->
+            <div class="schedule-section" id="scheduleALeg" style="display:none;">
+                <div class="schedule-header">
+                    <h3>Schedule A - Legislative Lobbying</h3>
+                    <button type="button" class="secondary" id="addLegActivityBtn">+ Add Entry</button>
+                </div>
+                <div class="schedule-content">
+                    <div class="info-box">
+                        <strong>Instructions:</strong> Report general categories and up to 4 specific subjects per category for legislative action.
+                    </div>
+                    <div id="legActivities"></div>
+                </div>
+            </div>
+
+            <!-- Schedule A: Administrative Lobbying -->
+            <div class="schedule-section" id="scheduleAAdmin" style="display:none;">
+                <div class="schedule-header">
+                    <h3>Schedule A - Administrative Lobbying</h3>
+                    <button type="button" class="secondary" id="addAdminActivityBtn">+ Add Entry</button>
+                </div>
+                <div class="schedule-content">
+                    <div class="info-box">
+                        <strong>Instructions:</strong> Report state agencies with administrative actions and revisor rule draft numbers.
+                    </div>
+                    <div id="adminActivities"></div>
+                </div>
+            </div>
+
+            <!-- Schedule A: PUC Lobbying -->
+            <div class="schedule-section" id="scheduleAPUC" style="display:none;">
+                <div class="schedule-header">
+                    <h3>Schedule A - Public Utilities Commission Lobbying</h3>
+                    <button type="button" class="secondary" id="addPUCActivityBtn">+ Add Entry</button>
+                </div>
+                <div class="schedule-content">
+                    <div id="pucActivities"></div>
+                </div>
+            </div>
+
+            <!-- Schedule A: Political Subdivision Lobbying -->
+            <div class="schedule-section" id="scheduleAPolSub" style="display:none;">
+                <div class="schedule-header">
+                    <h3>Schedule A - Political Subdivision Lobbying</h3>
+                    <button type="button" class="secondary" id="addPolSubActivityBtn">+ Add Entry</button>
+                </div>
+                <div class="schedule-content">
+                    <div class="info-box">
+                        <strong>Instructions:</strong> Report every political subdivision (county, city, township, school district, Met Council, etc.) where you sought to influence official action.
+                    </div>
+                    <div id="polSubActivities"></div>
+                </div>
+            </div>
+
+            <!-- Schedule B: Gifts -->
+            <div class="schedule-section" id="scheduleB" style="display:none;">
+                <div class="schedule-header">
+                    <h3>Schedule B - Gifts to Officials ($5+)</h3>
+                    <button type="button" class="secondary" id="addGiftBtn">+ Add Gift</button>
+                </div>
+                <div class="schedule-content">
+                    <div class="info-box">
+                        <strong>Exemption Codes:</strong> 1=Services for official duties, 2=Insignificant value, 3=Plaque/certificate, 4=Trinket, 5=Informational material, 6=Food at speech event, 7=Reception (all legislators invited), 8=Group gift, 9=Family gift, 10=Prohibited gift
+                    </div>
+                    <table class="gift-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Recipient Name & Office</th>
+                                <th>Item Given</th>
+                                <th>Cost ($)</th>
+                                <th>Exemption #</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="giftsTable"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Schedule C: Other Sources of Funds -->
+            <div class="schedule-section" id="scheduleC" style="display:none;">
+                <div class="schedule-header">
+                    <h3>Schedule C - Other Sources of Funds ($500+)</h3>
+                    <button type="button" class="secondary" id="addFundSourceBtn">+ Add Source</button>
+                </div>
+                <div class="schedule-content">
+                    <div id="fundSources"></div>
+                </div>
+            </div>
+
+            <!-- Schedule D: Expert Witnesses -->
+            <div class="schedule-section" id="scheduleD" style="display:none;">
+                <div class="schedule-header">
+                    <h3>Schedule D - Expert Witnesses</h3>
+                    <button type="button" class="secondary" id="addExpertBtn">+ Add Expert</button>
+                </div>
+                <div class="schedule-content">
+                    <div id="expertWitnesses"></div>
+                </div>
+            </div>
+
+            <!-- Schedule E: Finance Professionals -->
+            <div class="schedule-section" id="scheduleE" style="display:none;">
+                <div class="schedule-header">
+                    <h3>Schedule E - Finance Professionals</h3>
+                    <button type="button" class="secondary" id="addFinanceProBtn">+ Add Finance Professional</button>
+                </div>
+                <div class="schedule-content">
+                    <div id="financePros"></div>
+                </div>
+            </div>
+
+            <!-- Schedule G: Lobbyists Reported For -->
+            <div class="schedule-section" id="scheduleG" style="display:none;">
+                <div class="schedule-header">
+                    <h3>Schedule G - Lobbyists Reported For</h3>
+                    <button type="button" class="secondary" id="addReportedForBtn">+ Add Lobbyist</button>
+                </div>
+                <div class="schedule-content">
+                    <div id="reportedForLobbyists"></div>
+                </div>
+            </div>
+
+            <!-- Non-reporting lobbyists -->
+            <div class="schedule-section" id="nonReportingSection" style="display:none;">
+                <div class="schedule-header">
+                    <h3>Non-Reporting Lobbyists</h3>
+                </div>
+                <div class="schedule-content">
+                    <div class="form-group full">
+                        <label>Names and registration numbers of lobbyists who failed to provide disclosure</label>
+                        <textarea id="nonReportingLobbyists" placeholder="Enter names and registration numbers..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Generate Button -->
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #eee;">
+                <button class="success" id="generateReportBtn" style="padding: 15px 30px; font-size: 1.1em;">
+                    Generate PDF Report
+                </button>
+            </div>
+            <div class="generated-forms" id="generatedReports"></div>
+        </div>
+    </div>
+
+    <script>
+        // ===== CONSTANTS =====
+        const CATEGORIES = [
+            'Agriculture', 'Arts and Culture', 'Bonding', 'Business Regulation',
+            'Cannabis, Tobacco, Alcohol', 'Civil - Criminal Law', 'E-12 Education',
+            'Elections and Campaign Finance', 'Energy', 'Environment and Natural Resources',
+            'Food and Beverage Industry', 'Gambling', 'Health Care', 'Higher Education',
+            'Housing', 'Human Services', 'Insurance', 'Labor and Workforce Development',
+            'Local Government', 'Public Safety', 'Public Utilities Commission', 'Sports',
+            'State Government', 'Taxes', 'Technology and Communications', 'Transportation', 'Veteran Affairs'
+        ];
+
+        const REPORTING_PERIODS = {
+            'jan2026': { due: 'January 15, 2026', period: 'June 1 through December 31, 2025' },
+            'jun2026': { due: 'June 15, 2026', period: 'January 1 through May 31, 2026' },
+            'jan2025': { due: 'January 15, 2025', period: 'June 1 through December 31, 2024' },
+            'jun2025': { due: 'June 15, 2025', period: 'January 1 through May 31, 2025' }
+        };
+
+        let generatedPDFs = [];
+
+        // ===== UTILITIES =====
+        function sanitize(text) {
+            if (!text) return '';
+            return String(text)
+                .replace(/[\u0000-\u001F\u007F-\u009F\u200B-\u200F\u202A-\u202E\u2060-\u206F\uFEFF]/g, '')
+                .replace(/[^\x20-\x7E]/g, '');
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            return String(text)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function getLobbyists() {
+            try { return JSON.parse(localStorage.getItem('mn_report_lobbyists') || '[]'); }
+            catch (e) { return []; }
+        }
+
+        function saveLobbyistsData(data) {
+            localStorage.setItem('mn_report_lobbyists', JSON.stringify(data));
+        }
+
+        function getAssociations() {
+            try { return JSON.parse(localStorage.getItem('mn_report_associations') || '[]'); }
+            catch (e) { return []; }
+        }
+
+        function saveAssociationsData(data) {
+            localStorage.setItem('mn_report_associations', JSON.stringify(data));
+        }
+
+        // Get from registration app
+        function getRegLobbyists() {
+            try { return JSON.parse(localStorage.getItem('mn_lobbyists') || '[]'); }
+            catch (e) { return []; }
+        }
+
+        function getRegOrganizations() {
+            try { return JSON.parse(localStorage.getItem('mn_organizations') || '[]'); }
+            catch (e) { return []; }
+        }
+
+        // ===== TABS =====
+        function showTab(name) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelector('[data-tab="' + name + '"]').classList.add('active');
+            document.getElementById(name + '-tab').classList.add('active');
+        }
+
+        // ===== LOBBYISTS =====
+        function saveLobbyist(e) {
+            e.preventDefault();
+            var lobbyist = {
+                id: document.getElementById('lobbyistId').value || Date.now().toString(),
+                regNum: sanitize(document.getElementById('lobbyistRegNum').value),
+                name: sanitize(document.getElementById('lobbyistName').value),
+                email: sanitize(document.getElementById('lobbyistEmail').value),
+                phone: sanitize(document.getElementById('lobbyistPhone').value),
+                address: sanitize(document.getElementById('lobbyistAddress').value),
+                city: sanitize(document.getElementById('lobbyistCity').value),
+                state: sanitize(document.getElementById('lobbyistState').value),
+                zip: sanitize(document.getElementById('lobbyistZip').value)
+            };
+
+            var list = getLobbyists();
+            var idx = list.findIndex(l => l.id === lobbyist.id);
+            if (idx >= 0) list[idx] = lobbyist;
+            else list.push(lobbyist);
+
+            saveLobbyistsData(list);
+            clearLobbyistForm();
+            renderLobbyists();
+        }
+
+        function clearLobbyistForm() {
+            document.getElementById('lobbyistForm').reset();
+            document.getElementById('lobbyistId').value = '';
+            document.getElementById('lobbyistState').value = 'MN';
+        }
+
+        function editLobbyist(id) {
+            var l = getLobbyists().find(x => x.id === id);
+            if (!l) return;
+            document.getElementById('lobbyistId').value = l.id;
+            document.getElementById('lobbyistRegNum').value = l.regNum || '';
+            document.getElementById('lobbyistName').value = l.name || '';
+            document.getElementById('lobbyistEmail').value = l.email || '';
+            document.getElementById('lobbyistPhone').value = l.phone || '';
+            document.getElementById('lobbyistAddress').value = l.address || '';
+            document.getElementById('lobbyistCity').value = l.city || '';
+            document.getElementById('lobbyistState').value = l.state || 'MN';
+            document.getElementById('lobbyistZip').value = l.zip || '';
+            window.scrollTo(0, 0);
+        }
+
+        function deleteLobbyist(id) {
+            if (!confirm('Delete this lobbyist?')) return;
+            saveLobbyistsData(getLobbyists().filter(l => l.id !== id));
+            renderLobbyists();
+        }
+
+        function renderLobbyists() {
+            var search = (document.getElementById('lobbyistSearch').value || '').toLowerCase();
+            var list = getLobbyists();
+            if (search) {
+                list = list.filter(l =>
+                    (l.name || '').toLowerCase().includes(search) ||
+                    (l.regNum || '').includes(search)
+                );
+            }
+
+            var container = document.getElementById('lobbyistList');
+            if (list.length === 0) {
+                container.innerHTML = '<div class="empty">No lobbyists found. Add one above or import from the registration app.</div>';
+                return;
+            }
+
+            var html = '';
+            for (var l of list) {
+                html += '<div class="list-item">';
+                html += '<div>';
+                html += '<h4>';
+                if (l.regNum) html += '<span class="reg-badge">#' + escapeHtml(l.regNum) + '</span>';
+                html += escapeHtml(l.name);
+                html += '</h4>';
+                html += '<p>' + escapeHtml(l.email) + ' | ' + escapeHtml(l.phone) + '</p>';
+                html += '</div>';
+                html += '<div>';
+                html += '<button class="secondary" data-edit-lobbyist="' + escapeHtml(l.id) + '">Edit</button>';
+                html += '<button class="danger" data-delete-lobbyist="' + escapeHtml(l.id) + '">Delete</button>';
+                html += '</div></div>';
+            }
+            container.innerHTML = html;
+        }
+
+        function importFromRegistrationApp() {
+            var regLobbyists = getRegLobbyists();
+            if (regLobbyists.length === 0) {
+                alert('No lobbyists found in the registration app.');
+                return;
+            }
+
+            var existing = getLobbyists();
+            var existingRegNums = new Set(existing.map(l => l.regNum).filter(Boolean));
+            var imported = 0;
+
+            for (var rl of regLobbyists) {
+                if (rl.regNum && !existingRegNums.has(rl.regNum)) {
+                    existing.push({
+                        id: Date.now().toString() + Math.random().toString(36).substr(2),
+                        regNum: rl.regNum,
+                        name: rl.name,
+                        email: rl.email,
+                        phone: rl.phone,
+                        address: rl.address1 || rl.address || '',
+                        city: rl.city,
+                        state: rl.state,
+                        zip: rl.zip
+                    });
+                    existingRegNums.add(rl.regNum);
+                    imported++;
+                }
+            }
+
+            saveLobbyistsData(existing);
+            renderLobbyists();
+            alert('Imported ' + imported + ' lobbyist(s) from the registration app.');
+        }
+
+        // ===== ASSOCIATIONS =====
+        function addOfficer(office, name, address) {
+            var container = document.getElementById('officersList');
+            var id = Date.now();
+            var div = document.createElement('div');
+            div.className = 'form-row';
+            div.setAttribute('data-officer-id', id);
+            div.innerHTML = `
+                <div class="form-group"><label>Office Held</label><input type="text" class="officer-office" value="${escapeHtml(office || '')}"></div>
+                <div class="form-group"><label>Name</label><input type="text" class="officer-name" value="${escapeHtml(name || '')}"></div>
+                <div class="form-group"><label>Address</label><input type="text" class="officer-address" value="${escapeHtml(address || '')}"></div>
+                <div class="form-group" style="flex:0 0 auto;"><label>&nbsp;</label><button type="button" class="danger" data-remove-officer="${id}">Remove</button></div>
+            `;
+            container.appendChild(div);
+        }
+
+        function getOfficers() {
+            var officers = [];
+            var rows = document.querySelectorAll('#officersList .form-row');
+            for (var row of rows) {
+                var office = row.querySelector('.officer-office').value.trim();
+                var name = row.querySelector('.officer-name').value.trim();
+                var address = row.querySelector('.officer-address').value.trim();
+                if (office || name) officers.push({ office: sanitize(office), name: sanitize(name), address: sanitize(address) });
+            }
+            return officers;
+        }
+
+        function saveAssociation(e) {
+            e.preventDefault();
+            var assoc = {
+                id: document.getElementById('assocId').value || Date.now().toString(),
+                regNum: sanitize(document.getElementById('assocRegNum').value),
+                name: sanitize(document.getElementById('assocName').value),
+                officers: getOfficers()
+            };
+
+            var list = getAssociations();
+            var idx = list.findIndex(a => a.id === assoc.id);
+            if (idx >= 0) list[idx] = assoc;
+            else list.push(assoc);
+
+            saveAssociationsData(list);
+            clearAssocForm();
+            renderAssociations();
+        }
+
+        function clearAssocForm() {
+            document.getElementById('assocForm').reset();
+            document.getElementById('assocId').value = '';
+            document.getElementById('officersList').innerHTML = '';
+        }
+
+        function editAssociation(id) {
+            var a = getAssociations().find(x => x.id === id);
+            if (!a) return;
+            document.getElementById('assocId').value = a.id;
+            document.getElementById('assocRegNum').value = a.regNum || '';
+            document.getElementById('assocName').value = a.name || '';
+            document.getElementById('officersList').innerHTML = '';
+            for (var o of (a.officers || [])) {
+                addOfficer(o.office, o.name, o.address);
+            }
+            window.scrollTo(0, 0);
+        }
+
+        function deleteAssociation(id) {
+            if (!confirm('Delete this association?')) return;
+            saveAssociationsData(getAssociations().filter(a => a.id !== id));
+            renderAssociations();
+        }
+
+        function renderAssociations() {
+            var search = (document.getElementById('assocSearch').value || '').toLowerCase();
+            var list = getAssociations();
+            if (search) {
+                list = list.filter(a => (a.name || '').toLowerCase().includes(search));
+            }
+
+            var container = document.getElementById('assocList');
+            if (list.length === 0) {
+                container.innerHTML = '<div class="empty">No associations found. Add one above or import from the registration app.</div>';
+                return;
+            }
+
+            var html = '';
+            for (var a of list) {
+                html += '<div class="list-item">';
+                html += '<div>';
+                html += '<h4>';
+                if (a.regNum) html += '<span class="reg-badge">#' + escapeHtml(a.regNum) + '</span>';
+                html += escapeHtml(a.name);
+                html += '</h4>';
+                html += '<p>' + (a.officers || []).length + ' officer(s)</p>';
+                html += '</div>';
+                html += '<div>';
+                html += '<button class="secondary" data-edit-assoc="' + escapeHtml(a.id) + '">Edit</button>';
+                html += '<button class="danger" data-delete-assoc="' + escapeHtml(a.id) + '">Delete</button>';
+                html += '</div></div>';
+            }
+            container.innerHTML = html;
+        }
+
+        function importOrganizations() {
+            var regOrgs = getRegOrganizations();
+            if (regOrgs.length === 0) {
+                alert('No organizations found in the registration app.');
+                return;
+            }
+
+            var existing = getAssociations();
+            var existingNames = new Set(existing.map(a => (a.name || '').toLowerCase()));
+            var imported = 0;
+
+            for (var ro of regOrgs) {
+                if (ro.name && !existingNames.has(ro.name.toLowerCase())) {
+                    existing.push({
+                        id: Date.now().toString() + Math.random().toString(36).substr(2),
+                        regNum: ro.entityId || '',
+                        name: ro.name,
+                        officers: (ro.officers || []).map(o => ({
+                            office: '',
+                            name: o.name || '',
+                            address: o.address || ''
+                        }))
+                    });
+                    existingNames.add(ro.name.toLowerCase());
+                    imported++;
+                }
+            }
+
+            saveAssociationsData(existing);
+            renderAssociations();
+            alert('Imported ' + imported + ' organization(s) from the registration app.');
+        }
+
+        // ===== REPORT TAB - SEARCH DROPDOWNS =====
+        function searchReportLobbyists(query) {
+            var dropdown = document.getElementById('reportLobbyistDropdown');
+            if (!query || query.length < 1) {
+                dropdown.classList.remove('visible');
+                return;
+            }
+
+            var lobbyists = getLobbyists();
+            var matches = lobbyists.filter(l =>
+                (l.name || '').toLowerCase().includes(query.toLowerCase()) ||
+                (l.regNum || '').includes(query)
+            ).slice(0, 10);
+
+            if (matches.length === 0) {
+                dropdown.innerHTML = '<div class="search-dropdown-item">No matches found</div>';
+            } else {
+                var html = '';
+                for (var l of matches) {
+                    var displayName = (l.regNum ? '#' + l.regNum + ' - ' : '') + escapeHtml(l.name);
+                    html += '<div class="search-dropdown-item" data-select-report-lobbyist="' + escapeHtml(l.id) + '">';
+                    html += '<strong>' + displayName + '</strong><br>';
+                    html += '<small>' + escapeHtml(l.email || '') + '</small>';
+                    html += '</div>';
+                }
+                dropdown.innerHTML = html;
+            }
+            dropdown.classList.add('visible');
+        }
+
+        function selectReportLobbyist(id) {
+            var l = getLobbyists().find(x => x.id === id);
+            if (!l) return;
+            document.getElementById('selectedLobbyistId').value = id;
+            document.getElementById('reportLobbyistSearch').value = '';
+            document.getElementById('reportLobbyistDropdown').classList.remove('visible');
+            var displayName = (l.regNum ? '#' + l.regNum + ' - ' : '') + escapeHtml(l.name);
+            document.getElementById('selectedReportLobbyist').innerHTML =
+                '<div class="selected-item"><span>' + displayName + '</span><button type="button" data-clear-report-lobbyist>Clear</button></div>';
+        }
+
+        function searchReportAssociations(query) {
+            var dropdown = document.getElementById('reportAssocDropdown');
+            if (!query || query.length < 1) {
+                dropdown.classList.remove('visible');
+                return;
+            }
+
+            var assocs = getAssociations();
+            var matches = assocs.filter(a =>
+                (a.name || '').toLowerCase().includes(query.toLowerCase())
+            ).slice(0, 10);
+
+            if (matches.length === 0) {
+                dropdown.innerHTML = '<div class="search-dropdown-item">No matches found</div>';
+            } else {
+                var html = '';
+                for (var a of matches) {
+                    html += '<div class="search-dropdown-item" data-select-report-assoc="' + escapeHtml(a.id) + '">';
+                    html += '<strong>' + escapeHtml(a.name) + '</strong>';
+                    if (a.regNum) html += '<br><small>Reg #' + escapeHtml(a.regNum) + '</small>';
+                    html += '</div>';
+                }
+                dropdown.innerHTML = html;
+            }
+            dropdown.classList.add('visible');
+        }
+
+        function selectReportAssociation(id) {
+            var a = getAssociations().find(x => x.id === id);
+            if (!a) return;
+            document.getElementById('selectedAssocId').value = id;
+            document.getElementById('reportAssocSearch').value = '';
+            document.getElementById('reportAssocDropdown').classList.remove('visible');
+            document.getElementById('selectedReportAssoc').innerHTML =
+                '<div class="selected-item"><span>' + escapeHtml(a.name) + '</span><button type="button" data-clear-report-assoc>Clear</button></div>';
+        }
+
+        // ===== REPORT TAB - SCHEDULE ENTRIES =====
+        function buildCategoryDropdown(id) {
+            var html = '<select id="' + id + '"><option value="">Select category...</option>';
+            for (var cat of CATEGORIES) {
+                html += '<option value="' + escapeHtml(cat) + '">' + escapeHtml(cat) + '</option>';
+            }
+            html += '</select>';
+            return html;
+        }
+
+        function addLegActivity() {
+            var container = document.getElementById('legActivities');
+            var id = Date.now();
+            var div = document.createElement('div');
+            div.className = 'activity-entry';
+            div.setAttribute('data-leg-id', id);
+            div.innerHTML = `
+                <button type="button" class="danger remove-btn" data-remove-leg="${id}">Remove</button>
+                <div class="form-row">
+                    <div class="form-group">${buildCategoryDropdown('leg_cat_' + id)}</div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Specific Subject 1</label><input type="text" class="leg-subj1"></div>
+                    <div class="form-group"><label>Specific Subject 2</label><input type="text" class="leg-subj2"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Specific Subject 3</label><input type="text" class="leg-subj3"></div>
+                    <div class="form-group"><label>Specific Subject 4</label><input type="text" class="leg-subj4"></div>
+                </div>
+            `;
+            container.appendChild(div);
+        }
+
+        function addAdminActivity() {
+            var container = document.getElementById('adminActivities');
+            var id = Date.now();
+            var div = document.createElement('div');
+            div.className = 'activity-entry';
+            div.setAttribute('data-admin-id', id);
+            div.innerHTML = `
+                <button type="button" class="danger remove-btn" data-remove-admin="${id}">Remove</button>
+                <div class="form-row">
+                    <div class="form-group"><label>Agency, Board, Commission</label><input type="text" class="admin-agency"></div>
+                    <div class="form-group"><label>Revisor No.</label><input type="text" class="admin-revisor"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">${buildCategoryDropdown('admin_cat_' + id)}</div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Specific Subject 1</label><input type="text" class="admin-subj1"></div>
+                    <div class="form-group"><label>Specific Subject 2</label><input type="text" class="admin-subj2"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Specific Subject 3</label><input type="text" class="admin-subj3"></div>
+                    <div class="form-group"><label>Specific Subject 4</label><input type="text" class="admin-subj4"></div>
+                </div>
+            `;
+            container.appendChild(div);
+        }
+
+        function addPUCActivity() {
+            var container = document.getElementById('pucActivities');
+            var id = Date.now();
+            var div = document.createElement('div');
+            div.className = 'activity-entry';
+            div.setAttribute('data-puc-id', id);
+            div.innerHTML = `
+                <button type="button" class="danger remove-btn" data-remove-puc="${id}">Remove</button>
+                <div class="form-row">
+                    <div class="form-group"><label>Docket No.</label><input type="text" class="puc-docket"></div>
+                    <div class="form-group"><label>Project Name</label><input type="text" class="puc-project"></div>
+                </div>
+            `;
+            container.appendChild(div);
+        }
+
+        function addPolSubActivity() {
+            var container = document.getElementById('polSubActivities');
+            var id = Date.now();
+            var div = document.createElement('div');
+            div.className = 'activity-entry';
+            div.setAttribute('data-polsub-id', id);
+            div.innerHTML = `
+                <button type="button" class="danger remove-btn" data-remove-polsub="${id}">Remove</button>
+                <div class="form-row">
+                    <div class="form-group full"><label>Political Subdivision (County, City, Township, School District, etc.)</label><input type="text" class="polsub-name"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">${buildCategoryDropdown('polsub_cat_' + id)}</div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Specific Subject 1</label><input type="text" class="polsub-subj1"></div>
+                    <div class="form-group"><label>Specific Subject 2</label><input type="text" class="polsub-subj2"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Specific Subject 3</label><input type="text" class="polsub-subj3"></div>
+                    <div class="form-group"><label>Specific Subject 4</label><input type="text" class="polsub-subj4"></div>
+                </div>
+            `;
+            container.appendChild(div);
+        }
+
+        function addGiftRow() {
+            var tbody = document.getElementById('giftsTable');
+            var id = Date.now();
+            var tr = document.createElement('tr');
+            tr.setAttribute('data-gift-id', id);
+            tr.innerHTML = `
+                <td><input type="date" class="gift-date"></td>
+                <td><input type="text" class="gift-recipient" placeholder="Name and office"></td>
+                <td><input type="text" class="gift-item" placeholder="Description"></td>
+                <td><input type="number" class="gift-cost" step="0.01" min="0"></td>
+                <td><select class="gift-exemption">
+                    <option value="">-</option>
+                    <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+                    <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+                    <option value="7">7</option><option value="8">8</option><option value="9">9</option>
+                    <option value="10">10</option>
+                </select></td>
+                <td><button class="remove-row" data-remove-gift="${id}">X</button></td>
+            `;
+            tbody.appendChild(tr);
+        }
+
+        function addFundSource() {
+            var container = document.getElementById('fundSources');
+            var id = Date.now();
+            var div = document.createElement('div');
+            div.className = 'activity-entry';
+            div.setAttribute('data-fund-id', id);
+            div.innerHTML = `
+                <button type="button" class="danger remove-btn" data-remove-fund="${id}">Remove</button>
+                <div class="form-row">
+                    <div class="form-group"><label>Name of Source</label><input type="text" class="fund-name"></div>
+                    <div class="form-group"><label>Address</label><input type="text" class="fund-address"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group full"><label>Employer/Occupation/Principal Place of Business (if individual)</label><input type="text" class="fund-employer"></div>
+                </div>
+            `;
+            container.appendChild(div);
+        }
+
+        function addExpertWitness() {
+            var container = document.getElementById('expertWitnesses');
+            var id = Date.now();
+            var div = document.createElement('div');
+            div.className = 'activity-entry';
+            div.setAttribute('data-expert-id', id);
+            div.innerHTML = `
+                <button type="button" class="danger remove-btn" data-remove-expert="${id}">Remove</button>
+                <div class="form-row">
+                    <div class="form-group"><label>First Name</label><input type="text" class="expert-first"></div>
+                    <div class="form-group"><label>Last Name</label><input type="text" class="expert-last"></div>
+                    <div class="form-group"><label>Employer (if any)</label><input type="text" class="expert-employer"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Government Entity</label><input type="text" class="expert-entity"></div>
+                    <div class="form-group">${buildCategoryDropdown('expert_cat_' + id)}</div>
+                    <div class="form-group"><label>Specific Subject</label><input type="text" class="expert-subject"></div>
+                </div>
+            `;
+            container.appendChild(div);
+        }
+
+        function addFinancePro() {
+            var container = document.getElementById('financePros');
+            var id = Date.now();
+            var div = document.createElement('div');
+            div.className = 'activity-entry';
+            div.setAttribute('data-finance-id', id);
+            div.innerHTML = `
+                <button type="button" class="danger remove-btn" data-remove-finance="${id}">Remove</button>
+                <div class="form-row">
+                    <div class="form-group"><label>First Name</label><input type="text" class="finance-first"></div>
+                    <div class="form-group"><label>Last Name</label><input type="text" class="finance-last"></div>
+                    <div class="form-group"><label>Employer</label><input type="text" class="finance-employer"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Government Entity</label><input type="text" class="finance-entity"></div>
+                    <div class="form-group"><label>Conduit Financing Project</label><input type="text" class="finance-project"></div>
+                </div>
+            `;
+            container.appendChild(div);
+        }
+
+        function addReportedForLobbyist() {
+            var container = document.getElementById('reportedForLobbyists');
+            var id = Date.now();
+            var div = document.createElement('div');
+            div.className = 'activity-entry';
+            div.setAttribute('data-reported-id', id);
+            div.innerHTML = `
+                <button type="button" class="danger remove-btn" data-remove-reported="${id}">Remove</button>
+                <div class="form-row">
+                    <div class="form-group"><label>Lobbyist Name</label><input type="text" class="reported-name"></div>
+                    <div class="form-group"><label>Registration Number</label><input type="text" class="reported-regnum"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Types of Lobbying (check all that apply)</label>
+                        <div style="display:flex;gap:15px;flex-wrap:wrap;margin-top:8px;">
+                            <label><input type="checkbox" class="reported-leg"> Legislative</label>
+                            <label><input type="checkbox" class="reported-admin"> Administrative</label>
+                            <label><input type="checkbox" class="reported-puc"> Public Utilities</label>
+                            <label><input type="checkbox" class="reported-metro"> Metro Gov. Unit</label>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.appendChild(div);
+        }
+
+        // ===== TOGGLE SCHEDULE SECTIONS =====
+        function updateScheduleVisibility() {
+            document.getElementById('scheduleALeg').style.display = document.getElementById('chk2').checked ? 'block' : 'none';
+            document.getElementById('scheduleAAdmin').style.display = document.getElementById('chk3').checked ? 'block' : 'none';
+            document.getElementById('scheduleAPUC').style.display = document.getElementById('chk4').checked ? 'block' : 'none';
+            document.getElementById('scheduleAPolSub').style.display = document.getElementById('chk5').checked ? 'block' : 'none';
+            document.getElementById('scheduleB').style.display = document.getElementById('chk6').checked ? 'block' : 'none';
+            document.getElementById('scheduleC').style.display = document.getElementById('chk7').checked ? 'block' : 'none';
+            document.getElementById('scheduleD').style.display = document.getElementById('chk8').checked ? 'block' : 'none';
+            document.getElementById('scheduleE').style.display = document.getElementById('chk9').checked ? 'block' : 'none';
+            document.getElementById('scheduleG').style.display = document.getElementById('chk10').checked ? 'block' : 'none';
+            document.getElementById('nonReportingSection').style.display = document.getElementById('chk11').checked ? 'block' : 'none';
+            document.getElementById('amendDateGroup').style.display = document.getElementById('chk12').checked ? 'block' : 'none';
+        }
+
+        // ===== PDF GENERATION =====
+        function collectReportData() {
+            var data = {
+                lobbyistId: document.getElementById('selectedLobbyistId').value,
+                assocId: document.getElementById('selectedAssocId').value,
+                period: document.getElementById('reportPeriod').value,
+                isTerminating: document.getElementById('isTerminating').checked,
+                terminationDate: document.getElementById('terminationDate').value,
+                checkboxes: {
+                    noLobbying: document.getElementById('chk1').checked,
+                    legislative: document.getElementById('chk2').checked,
+                    administrative: document.getElementById('chk3').checked,
+                    puc: document.getElementById('chk4').checked,
+                    polSub: document.getElementById('chk5').checked,
+                    gifts: document.getElementById('chk6').checked,
+                    otherFunds: document.getElementById('chk7').checked,
+                    expertWitness: document.getElementById('chk8').checked,
+                    financePro: document.getElementById('chk9').checked,
+                    reportingFor: document.getElementById('chk10').checked,
+                    nonReporting: document.getElementById('chk11').checked,
+                    amending: document.getElementById('chk12').checked
+                },
+                amendDate: document.getElementById('amendDate').value,
+                legActivities: [],
+                adminActivities: [],
+                pucActivities: [],
+                polSubActivities: [],
+                gifts: [],
+                fundSources: [],
+                expertWitnesses: [],
+                financePros: [],
+                reportedFor: [],
+                nonReportingText: document.getElementById('nonReportingLobbyists').value
+            };
+
+            // Collect legislative activities
+            document.querySelectorAll('[data-leg-id]').forEach(div => {
+                var catSelect = div.querySelector('select');
+                data.legActivities.push({
+                    category: catSelect ? catSelect.value : '',
+                    subj1: div.querySelector('.leg-subj1').value,
+                    subj2: div.querySelector('.leg-subj2').value,
+                    subj3: div.querySelector('.leg-subj3').value,
+                    subj4: div.querySelector('.leg-subj4').value
+                });
+            });
+
+            // Collect admin activities
+            document.querySelectorAll('[data-admin-id]').forEach(div => {
+                var catSelect = div.querySelector('select');
+                data.adminActivities.push({
+                    agency: div.querySelector('.admin-agency').value,
+                    revisor: div.querySelector('.admin-revisor').value,
+                    category: catSelect ? catSelect.value : '',
+                    subj1: div.querySelector('.admin-subj1').value,
+                    subj2: div.querySelector('.admin-subj2').value,
+                    subj3: div.querySelector('.admin-subj3').value,
+                    subj4: div.querySelector('.admin-subj4').value
+                });
+            });
+
+            // Collect PUC activities
+            document.querySelectorAll('[data-puc-id]').forEach(div => {
+                data.pucActivities.push({
+                    docket: div.querySelector('.puc-docket').value,
+                    project: div.querySelector('.puc-project').value
+                });
+            });
+
+            // Collect political subdivision activities
+            document.querySelectorAll('[data-polsub-id]').forEach(div => {
+                var catSelect = div.querySelector('select');
+                data.polSubActivities.push({
+                    name: div.querySelector('.polsub-name').value,
+                    category: catSelect ? catSelect.value : '',
+                    subj1: div.querySelector('.polsub-subj1').value,
+                    subj2: div.querySelector('.polsub-subj2').value,
+                    subj3: div.querySelector('.polsub-subj3').value,
+                    subj4: div.querySelector('.polsub-subj4').value
+                });
+            });
+
+            // Collect gifts
+            document.querySelectorAll('[data-gift-id]').forEach(tr => {
+                data.gifts.push({
+                    date: tr.querySelector('.gift-date').value,
+                    recipient: tr.querySelector('.gift-recipient').value,
+                    item: tr.querySelector('.gift-item').value,
+                    cost: tr.querySelector('.gift-cost').value,
+                    exemption: tr.querySelector('.gift-exemption').value
+                });
+            });
+
+            // Collect fund sources
+            document.querySelectorAll('[data-fund-id]').forEach(div => {
+                data.fundSources.push({
+                    name: div.querySelector('.fund-name').value,
+                    address: div.querySelector('.fund-address').value,
+                    employer: div.querySelector('.fund-employer').value
+                });
+            });
+
+            // Collect expert witnesses
+            document.querySelectorAll('[data-expert-id]').forEach(div => {
+                var catSelect = div.querySelector('select');
+                data.expertWitnesses.push({
+                    firstName: div.querySelector('.expert-first').value,
+                    lastName: div.querySelector('.expert-last').value,
+                    employer: div.querySelector('.expert-employer').value,
+                    entity: div.querySelector('.expert-entity').value,
+                    category: catSelect ? catSelect.value : '',
+                    subject: div.querySelector('.expert-subject').value
+                });
+            });
+
+            // Collect finance professionals
+            document.querySelectorAll('[data-finance-id]').forEach(div => {
+                data.financePros.push({
+                    firstName: div.querySelector('.finance-first').value,
+                    lastName: div.querySelector('.finance-last').value,
+                    employer: div.querySelector('.finance-employer').value,
+                    entity: div.querySelector('.finance-entity').value,
+                    project: div.querySelector('.finance-project').value
+                });
+            });
+
+            // Collect reported for lobbyists
+            document.querySelectorAll('[data-reported-id]').forEach(div => {
+                data.reportedFor.push({
+                    name: div.querySelector('.reported-name').value,
+                    regNum: div.querySelector('.reported-regnum').value,
+                    legislative: div.querySelector('.reported-leg').checked,
+                    administrative: div.querySelector('.reported-admin').checked,
+                    puc: div.querySelector('.reported-puc').checked,
+                    metro: div.querySelector('.reported-metro').checked
+                });
+            });
+
+            return data;
+        }
+
+        async function generateReport() {
+            var statusDiv = document.getElementById('reportStatus');
+            var data = collectReportData();
+
+            // Validation
+            if (!data.lobbyistId) {
+                statusDiv.innerHTML = '<div class="status error">Please select a reporting lobbyist.</div>';
+                return;
+            }
+            if (!data.assocId) {
+                statusDiv.innerHTML = '<div class="status error">Please select an association.</div>';
+                return;
+            }
+
+            var lobbyist = getLobbyists().find(l => l.id === data.lobbyistId);
+            var assoc = getAssociations().find(a => a.id === data.assocId);
+
+            if (!lobbyist || !assoc) {
+                statusDiv.innerHTML = '<div class="status error">Invalid lobbyist or association selection.</div>';
+                return;
+            }
+
+            statusDiv.innerHTML = '<div class="status info">Generating PDF report...</div>';
+
+            try {
+                var pdfBytes = await createReportPDF(lobbyist, assoc, data);
+                var periodInfo = REPORTING_PERIODS[data.period];
+                var fileName = sanitize(lobbyist.name).replace(/[^a-z0-9]/gi, '_') + '_Report_' + data.period + '.pdf';
+
+                generatedPDFs = [{ bytes: pdfBytes, fileName: fileName, lobbyistName: lobbyist.name }];
+
+                statusDiv.innerHTML = '<div class="status success">Report generated! Download started.</div>';
+                renderGeneratedReports();
+                downloadPDF(0);
+
+            } catch (err) {
+                console.error(err);
+                statusDiv.innerHTML = '<div class="status error">Error: ' + err.message + '</div>';
+            }
+        }
+
+        async function createReportPDF(lobbyist, assoc, data) {
+            var PDFDocument = PDFLib.PDFDocument;
+            var rgb = PDFLib.rgb;
+            var StandardFonts = PDFLib.StandardFonts;
+
+            var pdfDoc = await PDFDocument.create();
+            var font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+            var fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+
+            var pageWidth = 612;
+            var pageHeight = 792;
+            var margin = 50;
+            var contentWidth = pageWidth - (margin * 2);
+
+            var headerBg = rgb(0.1, 0.37, 0.16);
+            var black = rgb(0, 0, 0);
+            var gray = rgb(0.3, 0.3, 0.3);
+            var lightGray = rgb(0.9, 0.9, 0.9);
+            var white = rgb(1, 1, 1);
+
+            var periodInfo = REPORTING_PERIODS[data.period];
+
+            // ========== PAGE 1 ==========
+            var page1 = pdfDoc.addPage([pageWidth, pageHeight]);
+            var y = pageHeight - margin;
+
+            // Header
+            page1.drawRectangle({ x: 0, y: pageHeight - 80, width: pageWidth, height: 80, color: headerBg });
+            page1.drawText('Minnesota Lobbyist Report', { x: margin, y: pageHeight - 40, size: 20, font: fontBold, color: white });
+            page1.drawText('For Designated Reporting Lobbyists', { x: margin, y: pageHeight - 58, size: 11, font: font, color: white });
+            page1.drawText('Campaign Finance and Public Disclosure Board', { x: margin, y: pageHeight - 73, size: 9, font: font, color: white });
+
+            y = pageHeight - 110;
+
+            // Lobbyist Information Section
+            page1.drawRectangle({ x: margin, y: y - 5, width: contentWidth, height: 20, color: headerBg });
+            page1.drawText('LOBBYIST INFORMATION', { x: margin + 10, y: y, size: 11, font: fontBold, color: white });
+            y -= 30;
+
+            function drawField(page, label, value, x, yPos, valueWidth) {
+                page.drawText(label, { x: x, y: yPos, size: 9, font: fontBold, color: gray });
+                page.drawText(sanitize(value) || '', { x: x, y: yPos - 14, size: 10, font: font, color: black });
+                page.drawLine({ start: { x: x, y: yPos - 17 }, end: { x: x + (valueWidth || 200), y: yPos - 17 }, thickness: 0.5, color: lightGray });
+            }
+
+            drawField(page1, 'Lobbyist Name', lobbyist.name, margin, y, 280);
+            drawField(page1, 'Registration Number', lobbyist.regNum, margin + 300, y, 150);
+            y -= 40;
+
+            drawField(page1, 'Address', lobbyist.address, margin, y, contentWidth);
+            y -= 40;
+
+            drawField(page1, 'City, State, ZIP', lobbyist.city + ', ' + lobbyist.state + ' ' + lobbyist.zip, margin, y, 250);
+            drawField(page1, 'Phone', lobbyist.phone, margin + 280, y, 150);
+            y -= 40;
+
+            drawField(page1, 'Email', lobbyist.email, margin, y, contentWidth);
+            y -= 50;
+
+            // Association Section
+            page1.drawRectangle({ x: margin, y: y - 5, width: contentWidth, height: 20, color: headerBg });
+            page1.drawText('ASSOCIATION REPRESENTED', { x: margin + 10, y: y, size: 11, font: fontBold, color: white });
+            y -= 30;
+
+            drawField(page1, 'Association Name', assoc.name, margin, y, 350);
+            drawField(page1, 'Registration Number', assoc.regNum, margin + 380, y, 130);
+            y -= 50;
+
+            // Reporting Period Section
+            page1.drawRectangle({ x: margin, y: y - 5, width: contentWidth, height: 20, color: headerBg });
+            page1.drawText('REPORTING PERIOD', { x: margin + 10, y: y, size: 11, font: fontBold, color: white });
+            y -= 30;
+
+            page1.drawText('Due Date: ' + periodInfo.due, { x: margin, y: y, size: 10, font: fontBold, color: black });
+            page1.drawText('Period Covered: ' + periodInfo.period, { x: margin + 200, y: y, size: 10, font: font, color: black });
+            y -= 20;
+
+            if (data.isTerminating) {
+                page1.drawText('Date of Termination: ' + (data.terminationDate || '___________'), { x: margin, y: y, size: 10, font: font, color: black });
+                y -= 20;
+            }
+
+            y -= 20;
+
+            // Checkboxes Section
+            page1.drawRectangle({ x: margin, y: y - 5, width: contentWidth, height: 20, color: headerBg });
+            page1.drawText('REPORT TYPE', { x: margin + 10, y: y, size: 11, font: fontBold, color: white });
+            y -= 25;
+
+            var checkboxLabels = [
+                { key: 'noLobbying', label: 'No lobbying efforts during this period' },
+                { key: 'legislative', label: 'Legislative action (Schedule A)' },
+                { key: 'administrative', label: 'Administrative action (Schedule A)' },
+                { key: 'puc', label: 'MN Public Utilities Commission (Schedule A)' },
+                { key: 'polSub', label: 'Political subdivision action (Schedule A)' },
+                { key: 'gifts', label: 'Gift/benefit to official $5+ (Schedule B)' },
+                { key: 'otherFunds', label: 'Received $500+ from another entity (Schedule C)' },
+                { key: 'expertWitness', label: 'Expert witness used (Schedule D)' },
+                { key: 'financePro', label: 'Finance professional used (Schedule E)' },
+                { key: 'reportingFor', label: 'Reporting for other lobbyists (Schedule G)' },
+                { key: 'nonReporting', label: 'Lobbyist failed to provide disclosure' },
+                { key: 'amending', label: 'Amending previous report' }
+            ];
+
+            var col = 0;
+            for (var i = 0; i < checkboxLabels.length; i++) {
+                var cb = checkboxLabels[i];
+                var xPos = margin + (col * 260);
+                page1.drawRectangle({ x: xPos, y: y - 3, width: 10, height: 10, borderColor: black, borderWidth: 1 });
+                if (data.checkboxes[cb.key]) {
+                    page1.drawText('X', { x: xPos + 2, y: y - 1, size: 8, font: fontBold, color: black });
+                }
+                page1.drawText(cb.label, { x: xPos + 15, y: y, size: 8, font: font, color: black });
+                col++;
+                if (col >= 2) {
+                    col = 0;
+                    y -= 18;
+                }
+            }
+            if (col !== 0) y -= 18;
+
+            y -= 30;
+
+            // Certification
+            if (y > 120) {
+                page1.drawRectangle({ x: margin, y: y - 5, width: contentWidth, height: 20, color: headerBg });
+                page1.drawText('CERTIFICATION', { x: margin + 10, y: y, size: 11, font: fontBold, color: white });
+                y -= 35;
+
+                page1.drawText('I, ' + sanitize(lobbyist.name) + ', certify that this report is complete, true, and correct.',
+                    { x: margin, y: y, size: 10, font: font, color: black });
+                y -= 40;
+
+                page1.drawText('Signature: _______________________________', { x: margin, y: y, size: 10, font: font, color: black });
+                page1.drawText('Date: ' + new Date().toLocaleDateString(), { x: margin + 320, y: y, size: 10, font: font, color: black });
+            }
+
+            // Footer
+            var footerText = 'Generated ' + new Date().toLocaleString() + ' | Minnesota Campaign Finance Board';
+            page1.drawText(footerText, { x: margin, y: 25, size: 8, font: font, color: gray });
+
+            // ========== PAGE 2+ - SCHEDULES ==========
+            var currentPage = null;
+            var currentY = 0;
+
+            function needNewPage() {
+                if (!currentPage || currentY < 100) {
+                    currentPage = pdfDoc.addPage([pageWidth, pageHeight]);
+                    currentPage.drawRectangle({ x: 0, y: pageHeight - 50, width: pageWidth, height: 50, color: headerBg });
+                    currentPage.drawText('Minnesota Lobbyist Report - ' + sanitize(lobbyist.name), { x: margin, y: pageHeight - 35, size: 12, font: fontBold, color: white });
+                    currentPage.drawText(footerText, { x: margin, y: 25, size: 8, font: font, color: gray });
+                    currentY = pageHeight - 80;
+                }
+            }
+
+            // Schedule A - Legislative
+            if (data.checkboxes.legislative && data.legActivities.length > 0) {
+                needNewPage();
+                currentPage.drawText('Schedule A - Legislative Lobbying', { x: margin, y: currentY, size: 12, font: fontBold, color: black });
+                currentY -= 25;
+
+                for (var act of data.legActivities) {
+                    if (currentY < 100) needNewPage();
+                    if (act.category) {
+                        currentPage.drawText('Category: ' + sanitize(act.category), { x: margin, y: currentY, size: 10, font: fontBold, color: black });
+                        currentY -= 15;
+                        var subjects = [act.subj1, act.subj2, act.subj3, act.subj4].filter(Boolean);
+                        if (subjects.length > 0) {
+                            currentPage.drawText('Subjects: ' + subjects.map(s => sanitize(s)).join(', '), { x: margin + 10, y: currentY, size: 9, font: font, color: gray });
+                            currentY -= 20;
+                        }
+                    }
+                }
+                currentY -= 15;
+            }
+
+            // Schedule A - Administrative
+            if (data.checkboxes.administrative && data.adminActivities.length > 0) {
+                needNewPage();
+                currentPage.drawText('Schedule A - Administrative Lobbying', { x: margin, y: currentY, size: 12, font: fontBold, color: black });
+                currentY -= 25;
+
+                for (var act of data.adminActivities) {
+                    if (currentY < 100) needNewPage();
+                    if (act.agency) {
+                        currentPage.drawText('Agency: ' + sanitize(act.agency) + (act.revisor ? ' | Revisor #: ' + sanitize(act.revisor) : ''),
+                            { x: margin, y: currentY, size: 10, font: fontBold, color: black });
+                        currentY -= 15;
+                        if (act.category) {
+                            currentPage.drawText('Category: ' + sanitize(act.category), { x: margin + 10, y: currentY, size: 9, font: font, color: gray });
+                            currentY -= 15;
+                        }
+                        var subjects = [act.subj1, act.subj2, act.subj3, act.subj4].filter(Boolean);
+                        if (subjects.length > 0) {
+                            currentPage.drawText('Subjects: ' + subjects.map(s => sanitize(s)).join(', '), { x: margin + 10, y: currentY, size: 9, font: font, color: gray });
+                            currentY -= 20;
+                        }
+                    }
+                }
+                currentY -= 15;
+            }
+
+            // Schedule A - PUC
+            if (data.checkboxes.puc && data.pucActivities.length > 0) {
+                needNewPage();
+                currentPage.drawText('Schedule A - Public Utilities Commission Lobbying', { x: margin, y: currentY, size: 12, font: fontBold, color: black });
+                currentY -= 25;
+
+                for (var act of data.pucActivities) {
+                    if (currentY < 100) needNewPage();
+                    if (act.docket || act.project) {
+                        currentPage.drawText('Docket: ' + sanitize(act.docket) + ' | Project: ' + sanitize(act.project),
+                            { x: margin, y: currentY, size: 10, font: font, color: black });
+                        currentY -= 20;
+                    }
+                }
+                currentY -= 15;
+            }
+
+            // Schedule A - Political Subdivision
+            if (data.checkboxes.polSub && data.polSubActivities.length > 0) {
+                needNewPage();
+                currentPage.drawText('Schedule A - Political Subdivision Lobbying', { x: margin, y: currentY, size: 12, font: fontBold, color: black });
+                currentY -= 25;
+
+                for (var act of data.polSubActivities) {
+                    if (currentY < 100) needNewPage();
+                    if (act.name) {
+                        currentPage.drawText('Political Subdivision: ' + sanitize(act.name), { x: margin, y: currentY, size: 10, font: fontBold, color: black });
+                        currentY -= 15;
+                        if (act.category) {
+                            currentPage.drawText('Category: ' + sanitize(act.category), { x: margin + 10, y: currentY, size: 9, font: font, color: gray });
+                            currentY -= 15;
+                        }
+                        var subjects = [act.subj1, act.subj2, act.subj3, act.subj4].filter(Boolean);
+                        if (subjects.length > 0) {
+                            currentPage.drawText('Subjects: ' + subjects.map(s => sanitize(s)).join(', '), { x: margin + 10, y: currentY, size: 9, font: font, color: gray });
+                            currentY -= 20;
+                        }
+                    }
+                }
+                currentY -= 15;
+            }
+
+            // Schedule B - Gifts
+            if (data.checkboxes.gifts && data.gifts.length > 0) {
+                needNewPage();
+                currentPage.drawText('Schedule B - Gifts to Officials', { x: margin, y: currentY, size: 12, font: fontBold, color: black });
+                currentY -= 25;
+
+                for (var gift of data.gifts) {
+                    if (currentY < 100) needNewPage();
+                    if (gift.recipient) {
+                        currentPage.drawText(sanitize(gift.date) + ' | ' + sanitize(gift.recipient) + ' | ' + sanitize(gift.item) +
+                            ' | $' + sanitize(gift.cost) + ' | Exemption: ' + sanitize(gift.exemption),
+                            { x: margin, y: currentY, size: 9, font: font, color: black });
+                        currentY -= 15;
+                    }
+                }
+                currentY -= 15;
+            }
+
+            // Schedule C - Fund Sources
+            if (data.checkboxes.otherFunds && data.fundSources.length > 0) {
+                needNewPage();
+                currentPage.drawText('Schedule C - Other Sources of Funds', { x: margin, y: currentY, size: 12, font: fontBold, color: black });
+                currentY -= 25;
+
+                for (var src of data.fundSources) {
+                    if (currentY < 100) needNewPage();
+                    if (src.name) {
+                        currentPage.drawText(sanitize(src.name) + ', ' + sanitize(src.address), { x: margin, y: currentY, size: 10, font: font, color: black });
+                        currentY -= 15;
+                        if (src.employer) {
+                            currentPage.drawText('Employer/Occupation: ' + sanitize(src.employer), { x: margin + 10, y: currentY, size: 9, font: font, color: gray });
+                            currentY -= 20;
+                        }
+                    }
+                }
+                currentY -= 15;
+            }
+
+            // Schedule D - Expert Witnesses
+            if (data.checkboxes.expertWitness && data.expertWitnesses.length > 0) {
+                needNewPage();
+                currentPage.drawText('Schedule D - Expert Witnesses', { x: margin, y: currentY, size: 12, font: fontBold, color: black });
+                currentY -= 25;
+
+                for (var exp of data.expertWitnesses) {
+                    if (currentY < 100) needNewPage();
+                    if (exp.firstName || exp.lastName) {
+                        currentPage.drawText(sanitize(exp.firstName) + ' ' + sanitize(exp.lastName) +
+                            (exp.employer ? ' (' + sanitize(exp.employer) + ')' : ''), { x: margin, y: currentY, size: 10, font: font, color: black });
+                        currentY -= 15;
+                        currentPage.drawText('Entity: ' + sanitize(exp.entity) + ' | Category: ' + sanitize(exp.category) + ' | Subject: ' + sanitize(exp.subject),
+                            { x: margin + 10, y: currentY, size: 9, font: font, color: gray });
+                        currentY -= 20;
+                    }
+                }
+                currentY -= 15;
+            }
+
+            // Schedule E - Finance Professionals
+            if (data.checkboxes.financePro && data.financePros.length > 0) {
+                needNewPage();
+                currentPage.drawText('Schedule E - Finance Professionals', { x: margin, y: currentY, size: 12, font: fontBold, color: black });
+                currentY -= 25;
+
+                for (var fp of data.financePros) {
+                    if (currentY < 100) needNewPage();
+                    if (fp.firstName || fp.lastName) {
+                        currentPage.drawText(sanitize(fp.firstName) + ' ' + sanitize(fp.lastName) +
+                            (fp.employer ? ' (' + sanitize(fp.employer) + ')' : ''), { x: margin, y: currentY, size: 10, font: font, color: black });
+                        currentY -= 15;
+                        currentPage.drawText('Entity: ' + sanitize(fp.entity) + ' | Project: ' + sanitize(fp.project),
+                            { x: margin + 10, y: currentY, size: 9, font: font, color: gray });
+                        currentY -= 20;
+                    }
+                }
+                currentY -= 15;
+            }
+
+            // Schedule F - Officers (from association)
+            if (assoc.officers && assoc.officers.length > 0) {
+                needNewPage();
+                currentPage.drawText('Schedule F - Officers and Directors', { x: margin, y: currentY, size: 12, font: fontBold, color: black });
+                currentY -= 25;
+
+                for (var off of assoc.officers) {
+                    if (currentY < 100) needNewPage();
+                    currentPage.drawText((off.office ? sanitize(off.office) + ': ' : '') + sanitize(off.name) +
+                        (off.address ? ' | ' + sanitize(off.address) : ''), { x: margin, y: currentY, size: 10, font: font, color: black });
+                    currentY -= 15;
+                }
+                currentY -= 15;
+            }
+
+            // Schedule G - Reported For
+            if (data.checkboxes.reportingFor && data.reportedFor.length > 0) {
+                needNewPage();
+                currentPage.drawText('Schedule G - Lobbyists Reported For', { x: margin, y: currentY, size: 12, font: fontBold, color: black });
+                currentY -= 25;
+
+                for (var rf of data.reportedFor) {
+                    if (currentY < 100) needNewPage();
+                    if (rf.name) {
+                        var types = [];
+                        if (rf.legislative) types.push('Legislative');
+                        if (rf.administrative) types.push('Administrative');
+                        if (rf.puc) types.push('PUC');
+                        if (rf.metro) types.push('Metro Gov');
+                        currentPage.drawText(sanitize(rf.name) + ' (#' + sanitize(rf.regNum) + ') - ' + types.join(', '),
+                            { x: margin, y: currentY, size: 10, font: font, color: black });
+                        currentY -= 15;
+                    }
+                }
+                currentY -= 15;
+            }
+
+            // Non-reporting lobbyists
+            if (data.checkboxes.nonReporting && data.nonReportingText) {
+                needNewPage();
+                currentPage.drawText('Non-Reporting Lobbyists', { x: margin, y: currentY, size: 12, font: fontBold, color: black });
+                currentY -= 20;
+                currentPage.drawText(sanitize(data.nonReportingText).substring(0, 500), { x: margin, y: currentY, size: 10, font: font, color: black });
+            }
+
+            return await pdfDoc.save();
+        }
+
+        function renderGeneratedReports() {
+            var container = document.getElementById('generatedReports');
+            if (generatedPDFs.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+
+            var html = '<h3>Generated Reports</h3>';
+            for (var i = 0; i < generatedPDFs.length; i++) {
+                html += '<div class="generated-form-item">';
+                html += '<span>' + escapeHtml(generatedPDFs[i].lobbyistName) + ' - ' + escapeHtml(generatedPDFs[i].fileName) + '</span>';
+                html += '<button data-download-report="' + i + '">Download</button>';
+                html += '</div>';
+            }
+            container.innerHTML = html;
+        }
+
+        function downloadPDF(index) {
+            if (!generatedPDFs[index]) return;
+            var pdf = generatedPDFs[index];
+            var blob = new Blob([pdf.bytes], { type: 'application/pdf' });
+            var url = URL.createObjectURL(blob);
+            var link = document.createElement('a');
+            link.href = url;
+            link.download = pdf.fileName;
+            link.style.cssText = 'position:fixed;left:-9999px;';
+            document.body.appendChild(link);
+            link.click();
+            setTimeout(function() {
+                if (link.parentNode) document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            }, 2000);
+        }
+
+        // ===== EVENT DELEGATION =====
+        document.addEventListener('click', function(e) {
+            var target = e.target;
+
+            // Tabs
+            if (target.classList.contains('tab')) {
+                var tabName = target.getAttribute('data-tab');
+                if (tabName) showTab(tabName);
+            }
+
+            // Lobbyist actions
+            if (target.hasAttribute('data-edit-lobbyist')) editLobbyist(target.getAttribute('data-edit-lobbyist'));
+            if (target.hasAttribute('data-delete-lobbyist')) deleteLobbyist(target.getAttribute('data-delete-lobbyist'));
+
+            // Association actions
+            if (target.hasAttribute('data-edit-assoc')) editAssociation(target.getAttribute('data-edit-assoc'));
+            if (target.hasAttribute('data-delete-assoc')) deleteAssociation(target.getAttribute('data-delete-assoc'));
+            if (target.hasAttribute('data-remove-officer')) {
+                var row = target.closest('.form-row');
+                if (row) row.remove();
+            }
+
+            // Report lobbyist/assoc selection
+            if (target.hasAttribute('data-select-report-lobbyist') || target.closest('[data-select-report-lobbyist]')) {
+                var item = target.hasAttribute('data-select-report-lobbyist') ? target : target.closest('[data-select-report-lobbyist]');
+                selectReportLobbyist(item.getAttribute('data-select-report-lobbyist'));
+            }
+            if (target.hasAttribute('data-select-report-assoc') || target.closest('[data-select-report-assoc]')) {
+                var item = target.hasAttribute('data-select-report-assoc') ? target : target.closest('[data-select-report-assoc]');
+                selectReportAssociation(item.getAttribute('data-select-report-assoc'));
+            }
+            if (target.hasAttribute('data-clear-report-lobbyist')) {
+                document.getElementById('selectedLobbyistId').value = '';
+                document.getElementById('selectedReportLobbyist').innerHTML = '';
+            }
+            if (target.hasAttribute('data-clear-report-assoc')) {
+                document.getElementById('selectedAssocId').value = '';
+                document.getElementById('selectedReportAssoc').innerHTML = '';
+            }
+
+            // Remove schedule entries
+            if (target.hasAttribute('data-remove-leg')) target.closest('[data-leg-id]').remove();
+            if (target.hasAttribute('data-remove-admin')) target.closest('[data-admin-id]').remove();
+            if (target.hasAttribute('data-remove-puc')) target.closest('[data-puc-id]').remove();
+            if (target.hasAttribute('data-remove-polsub')) target.closest('[data-polsub-id]').remove();
+            if (target.hasAttribute('data-remove-gift')) target.closest('[data-gift-id]').remove();
+            if (target.hasAttribute('data-remove-fund')) target.closest('[data-fund-id]').remove();
+            if (target.hasAttribute('data-remove-expert')) target.closest('[data-expert-id]').remove();
+            if (target.hasAttribute('data-remove-finance')) target.closest('[data-finance-id]').remove();
+            if (target.hasAttribute('data-remove-reported')) target.closest('[data-reported-id]').remove();
+
+            // Download
+            if (target.hasAttribute('data-download-report')) downloadPDF(parseInt(target.getAttribute('data-download-report')));
+        });
+
+        document.addEventListener('change', function(e) {
+            // Checkbox changes for schedule visibility
+            if (e.target.id && e.target.id.startsWith('chk')) {
+                updateScheduleVisibility();
+            }
+            // Termination checkbox
+            if (e.target.id === 'isTerminating') {
+                document.getElementById('terminationDateGroup').style.display = e.target.checked ? 'block' : 'none';
+            }
+        });
+
+        // ===== INIT =====
+        document.addEventListener('DOMContentLoaded', function() {
+            renderLobbyists();
+            renderAssociations();
+
+            // Form submissions
+            document.getElementById('lobbyistForm').addEventListener('submit', saveLobbyist);
+            document.getElementById('assocForm').addEventListener('submit', saveAssociation);
+
+            // Buttons
+            document.getElementById('clearLobbyistBtn').addEventListener('click', clearLobbyistForm);
+            document.getElementById('clearAssocBtn').addEventListener('click', clearAssocForm);
+            document.getElementById('addOfficerBtn').addEventListener('click', function() { addOfficer('', '', ''); });
+            document.getElementById('importFromRegBtn').addEventListener('click', importFromRegistrationApp);
+            document.getElementById('importOrgsBtn').addEventListener('click', importOrganizations);
+
+            // Search inputs
+            document.getElementById('lobbyistSearch').addEventListener('input', renderLobbyists);
+            document.getElementById('assocSearch').addEventListener('input', renderAssociations);
+
+            // Report tab search inputs
+            document.getElementById('reportLobbyistSearch').addEventListener('input', function(e) {
+                searchReportLobbyists(e.target.value);
+            });
+            document.getElementById('reportAssocSearch').addEventListener('input', function(e) {
+                searchReportAssociations(e.target.value);
+            });
+
+            // Schedule add buttons
+            document.getElementById('addLegActivityBtn').addEventListener('click', addLegActivity);
+            document.getElementById('addAdminActivityBtn').addEventListener('click', addAdminActivity);
+            document.getElementById('addPUCActivityBtn').addEventListener('click', addPUCActivity);
+            document.getElementById('addPolSubActivityBtn').addEventListener('click', addPolSubActivity);
+            document.getElementById('addGiftBtn').addEventListener('click', addGiftRow);
+            document.getElementById('addFundSourceBtn').addEventListener('click', addFundSource);
+            document.getElementById('addExpertBtn').addEventListener('click', addExpertWitness);
+            document.getElementById('addFinanceProBtn').addEventListener('click', addFinancePro);
+            document.getElementById('addReportedForBtn').addEventListener('click', addReportedForLobbyist);
+
+            // Generate report
+            document.getElementById('generateReportBtn').addEventListener('click', generateReport);
+
+            // Close dropdowns when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.search-dropdown')) {
+                    document.querySelectorAll('.search-dropdown-list').forEach(function(dropdown) {
+                        dropdown.classList.remove('visible');
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
