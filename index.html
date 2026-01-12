@@ -268,16 +268,16 @@
                     <label>Signature</label>
                     <select id="signatureSelect">
                         <option value="">-- No Signature --</option>
-                        <option value="alexiskisesig.png">Alexis Kise</option>
-                        <option value="amykochsig.png">Amy Koch</option>
-                        <option value="izzyrojassig.png">Izzy Rojas</option>
-                        <option value="brianmcdanielsig.png">Brian McDaniel</option>
-                        <option value="nataliamadrygsig.png">Natalia Madryga</option>
-                        <option value="kayladrakesig.png">Kayla Drake</option>
-                        <option value="nicksandbergsig.png">Nick Sandberg</option>
-                        <option value="willwaggonersig.png">Will Waggoner</option>
-                        <option value="mikefranklinig.png">Mike Franklin</option>
-                        <option value="alysennesnesig.png">Alysen Nesse</option>
+                        <option value="alexiskisesig.jpg">Alexis Kise</option>
+                        <option value="amykochsig.jpg">Amy Koch</option>
+                        <option value="izzyrojassig.jpg">Izzy Rojas</option>
+                        <option value="brianmcdanielsig.jpg">Brian McDaniel</option>
+                        <option value="nataliamadrygsig.jpg">Natalia Madryga</option>
+                        <option value="kayladrakesig.jpg">Kayla Drake</option>
+                        <option value="nicksandbergsig.jpg">Nick Sandberg</option>
+                        <option value="willwaggonersig.jpg">Will Waggoner</option>
+                        <option value="mikefranklinig.jpg">Mike Franklin</option>
+                        <option value="alysennesnesig.jpg">Alysen Nesse</option>
                     </select>
                 </div>
             </div>
@@ -1404,7 +1404,7 @@
                         var sigResponse = await fetch(sigUrl);
                         if (sigResponse.ok) {
                             var sigBytes = await sigResponse.arrayBuffer();
-                            var sigImage = await pdfDoc.embedPng(sigBytes);
+                            var sigImage = await pdfDoc.embedjpg(sigBytes);
                             var sigDims = sigImage.scale(0.5); // Adjust scale as needed
                             // Cap the signature size
                             var maxHeight = 40;
