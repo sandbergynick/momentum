@@ -1724,6 +1724,8 @@
         document.addEventListener('DOMContentLoaded', function() {
             // Check if already logged in
             checkLogin();
+            // Load defaults if needed                                                                                                                                                   
+            initDefaults();                                                                                                                                                                                             
 
             // Login form handler
             document.getElementById('loginForm').addEventListener('submit', handleLogin);
