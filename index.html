@@ -1404,7 +1404,7 @@
                         var sigResponse = await fetch(sigUrl);
                         if (sigResponse.ok) {
                             var sigBytes = await sigResponse.arrayBuffer();
-                            var sigImage = await pdfDoc.embedjpg(sigBytes);
+                            var sigImage = await pdfDoc.embedJpg(sigBytes);
                             var sigDims = sigImage.scale(0.5); // Adjust scale as needed
                             // Cap the signature size
                             var maxHeight = 40;
