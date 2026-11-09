@@ -201,6 +201,76 @@
         .qp-filed{background:var(--ok-soft);border-color:#c3dfcc;color:var(--ok);padding-right:6px}
         .qp-skip{opacity:.6;text-decoration:line-through}
         .qp-generated{background:var(--gold-soft);border-color:#f1d98a}
+        /* ===== Trophy collection (To file + Lobbyists) ===== */
+        .tab-content.case{background:radial-gradient(ellipse 90% 60% at 50% -8%,#1f5694 0%,#0a3d70 35%,#00284d 70%,#001a33 100%);border-color:#0b3c6b;color:var(--cream);box-shadow:0 10px 30px rgba(0,26,51,.25)}
+        .case h2{color:var(--gold-soft)}
+        .case .lede,.case .count,.case .empty{color:#a9b7c9}
+        .case .editor{color:var(--ink)}
+        .case .list-head > button{background:var(--gold);border-color:var(--gold);color:var(--navy)}
+        .case .list-head > button:hover{background:#ffc52a;box-shadow:none}
+        .case .list-head .search-box input{background:rgba(255,255,255,.95)}
+        .shelf-head{display:flex;align-items:center;gap:12px;margin:26px 0 4px}
+        .plate{background:linear-gradient(180deg,#f7dc82,#d9a516 55%,#b88a0c);color:var(--navy);font-weight:800;font-size:11px;letter-spacing:.12em;text-transform:uppercase;padding:5px 14px;border-radius:4px;box-shadow:0 1px 0 rgba(255,255,255,.5) inset,0 2px 6px rgba(0,0,0,.35)}
+        .shelf-count{font-size:12px;font-weight:600;color:#a9b7c9}
+        .shelf-note{font-size:12.5px;color:#8fa2ba;margin:4px 0 6px}
+        .shelf{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:6px 8px;padding:6px 0 18px;
+            background:linear-gradient(180deg,transparent calc(100% - 3px),rgba(238,179,16,.35) calc(100% - 3px),rgba(238,179,16,.1))}
+
+        .trophy{--size:76px;--spin:9s;display:flex;flex-direction:column;align-items:center;gap:6px;margin:0;padding:12px 6px 10px;border:1px solid transparent;border-radius:14px;background:none;color:var(--cream);font:inherit;cursor:pointer;box-shadow:none;transition:background .2s,border-color .2s}
+        .trophy:hover{background:rgba(255,255,255,.05);box-shadow:none}
+        .trophy.sel{background:rgba(238,179,16,.12);border-color:rgba(238,179,16,.55)}
+        .trophy:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+        .t-stage{position:relative;width:var(--size);height:calc(var(--size) * 1.3);perspective:640px;display:flex;justify-content:center;transition:transform .25s ease}
+        .trophy:hover .t-stage{transform:translateY(-4px) scale(1.07)}
+        .t-float{display:block;transform-style:preserve-3d;animation:t-bob 3.4s ease-in-out var(--d,0s) infinite alternate}
+        .t-spin{display:block;position:relative;width:var(--size);height:var(--size);transform-style:preserve-3d;animation:t-spin var(--spin) linear var(--d,0s) infinite}
+        .t-face{position:absolute;inset:0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;letter-spacing:-.02em;font-size:calc(var(--size) * .27);backface-visibility:hidden;-webkit-backface-visibility:hidden}
+        .t-front{transform:translateZ(3px)}
+        .t-back{transform:rotateY(180deg) translateZ(3px);font-size:calc(var(--size) * .2)}
+        .t-mid{transform:scale(.97);backface-visibility:visible}
+        .t-pedestal{position:absolute;bottom:2px;left:12%;width:76%;height:12px;border-radius:50%;background:radial-gradient(ellipse at center,rgba(0,0,0,.55),rgba(0,0,0,0) 70%);animation:t-shadow 3.4s ease-in-out var(--d,0s) infinite alternate}
+        .t-name{font-size:12.5px;font-weight:700;line-height:1.25;text-align:center;max-width:100%;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+        .t-sub{font-size:11px;font-weight:700;color:var(--gold);display:flex;align-items:center;gap:5px}
+        .warn-dot{width:7px;height:7px;border-radius:50%;background:#ffb020}
+
+        .t-gold .t-front,.t-gold .t-back{background:radial-gradient(circle at 35% 28%,#fff6cf 0%,#f6cf4f 30%,#eeb310 55%,#a37400 100%);color:var(--navy);box-shadow:inset 0 0 0 3px rgba(255,255,255,.35),inset 0 -6px 12px rgba(80,50,0,.35)}
+        .t-gold .t-mid{background:#9a6b00}
+        .t-silver .t-front,.t-silver .t-back{background:radial-gradient(circle at 35% 28%,#ffffff 0%,#e3e8ee 32%,#b9c3cf 58%,#6f7b89 100%);color:var(--navy);box-shadow:inset 0 0 0 3px rgba(255,255,255,.5),inset 0 -6px 12px rgba(0,0,0,.25)}
+        .t-silver .t-mid{background:#6a7480}
+        .t-bronze .t-front,.t-bronze .t-back{background:radial-gradient(circle at 35% 28%,#f6d6b5 0%,#d28d50 35%,#a0602a 62%,#5e3412 100%);color:#fff4e6;box-shadow:inset 0 0 0 3px rgba(255,255,255,.25),inset 0 -6px 12px rgba(0,0,0,.3)}
+        .t-bronze .t-mid{background:#5e3412}
+        .trophy.t-bronze{opacity:.72}
+        .t-navy .t-front,.t-navy .t-back{background:radial-gradient(circle at 35% 28%,#5d8cc6 0%,#1d5799 30%,#00325d 62%,#001a33 100%);color:var(--gold);box-shadow:inset 0 0 0 3px var(--gold),inset 0 0 0 5px rgba(255,255,255,.15),inset 0 -6px 12px rgba(0,0,0,.4)}
+        .t-navy .t-mid{background:#b88a0c}
+
+        @keyframes t-spin{from{transform:rotateY(0)}to{transform:rotateY(360deg)}}
+        @keyframes t-bob{from{transform:translateY(0)}to{transform:translateY(-9px)}}
+        @keyframes t-shadow{from{transform:scale(1);opacity:.95}to{transform:scale(.78);opacity:.55}}
+        .trophy.off .t-spin,.trophy.off .t-float,.trophy.off .t-pedestal{animation-play-state:paused}
+
+        /* showcase: big spinning trophy under a spotlight + Melee-style description box */
+        .showcase{display:grid;grid-template-columns:230px 1fr;gap:18px;align-items:stretch;margin:4px 0 6px}
+        .sc-stage{position:relative;display:flex;align-items:flex-end;justify-content:center;border-radius:16px;padding-bottom:6px;
+            background:radial-gradient(ellipse 60% 85% at 50% 0%,rgba(255,240,190,.38) 0%,rgba(255,240,190,.08) 55%,transparent 75%),
+                       radial-gradient(ellipse 55% 14% at 50% 92%,rgba(238,179,16,.35),transparent 70%)}
+        .trophy.big{--size:132px;--spin:6s;pointer-events:none;padding-bottom:4px}
+        .trophy.big .t-name,.trophy.big .t-sub{display:none}
+        .sc-box{background:linear-gradient(180deg,rgba(0,24,52,.88),rgba(0,14,32,.94));border:2px solid var(--gold);border-radius:14px;padding:16px 20px 18px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08),0 12px 30px rgba(0,0,0,.35)}
+        .sc-kicker{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--gold)}
+        .sc-box h3.sc-title{border:0;padding:0;margin:4px 0 8px;color:var(--cream);font-size:20px}
+        .sc-desc{color:#c9d3e0;font-size:13px;margin:0 0 10px}
+        .sc-box .queue-people{margin:0 0 12px}
+
+        @media (max-width:640px){
+            .showcase{grid-template-columns:1fr}
+            .trophy.big{--size:104px}
+            .shelf{grid-template-columns:repeat(auto-fill,minmax(104px,1fr))}
+            .trophy{--size:64px}
+        }
+        @media (prefers-reduced-motion:reduce){
+            .t-spin,.t-float,.t-pedestal{animation:none}
+            .t-spin{transform:rotateY(-18deg)}
+        }
         footer{background:var(--navy);color:#c9d3e0;font-size:12px;border-top:3px solid var(--gold)}
         footer .container{padding-top:20px;padding-bottom:26px;display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-between}
         footer b{color:var(--cream)}
@@ -261,7 +331,7 @@
     <main class="container">
 
         <!-- Lobbyists Tab -->
-        <div id="tofile-tab" class="tab-content active">
+        <div id="tofile-tab" class="tab-content case active">
             <h2>To file <span class="count" id="queueCount"></span></h2>
             <div class="list-head" style="margin-top:-6px;">
                 <p class="lede" style="margin:0;flex:1;">Gaps between the client roster and what's registered with the CFB. Open a form, file it, then mark it filed.</p>
@@ -273,7 +343,7 @@
             <div id="queueList"><div class="empty">Sign in to see what needs filing.</div></div>
         </div>
 
-        <div id="lobbyists-tab" class="tab-content">
+        <div id="lobbyists-tab" class="tab-content case">
             <h2>Lobbyists <span class="count" id="lobbyistCount"></span></h2>
             <div class="list-head">
                 <div class="search-box"><input type="text" id="lobbyistSearch" placeholder="Search by name, email or reg #..."></div>
@@ -683,55 +753,177 @@
             var me = DB.lobbyists.find(function(l) { return currentUser && (l.email || '').toLowerCase() === currentUser.email.toLowerCase(); });
             return me ? me.id : null;
         }
-        function renderQueue() {
-            var box = document.getElementById('queueList');
-            var lobById = {}, orgById = {};
-            DB.lobbyists.forEach(function(l) { lobById[l.id] = l; });
+        // ===== TROPHY GALLERY (Melee-style collection) =====
+        // Pure CSS 3D: animations only touch transform/opacity (GPU-composited, no layout work).
+        // Off-screen trophies pause via IntersectionObserver; prefers-reduced-motion stops motion entirely.
+        var trophyObserver = ('IntersectionObserver' in window) ? new IntersectionObserver(function(entries) {
+            entries.forEach(function(e) { e.target.classList.toggle('off', !e.isIntersecting); });
+        }, { rootMargin: '80px' }) : null;
+        function observeTrophies(root) {
+            if (!trophyObserver) return;
+            root.querySelectorAll('.trophy').forEach(function(t) { trophyObserver.observe(t); });
+        }
+        function abbr(name) {
+            var skip = { of: 1, the: 1, and: 1, for: 1, inc: 1, 'inc.': 1, llc: 1, '&': 1, a: 1, city: 1, mn: 0 };
+            var paren = /\(([A-Z][A-Za-z\-]{1,6})\)/.exec(name || '');
+            if (paren) return paren[1].slice(0, 4).toUpperCase();
+            var w = String(name || '?').replace(/[^A-Za-z0-9&\s\-]/g, ' ').split(/[\s\-]+/).filter(function(x) { return x && !skip[x.toLowerCase()]; });
+            if (w.length === 1) return w[0].slice(0, 3).toUpperCase();
+            return w.slice(0, 3).map(function(x) { return x[0]; }).join('').toUpperCase();
+        }
+        function initials(name) {
+            var p = String(name || '').replace(/\b[A-Z]\.\s*/g, '').trim().split(/\s+/);
+            return ((p[0] || '')[0] || '') + ((p.length > 1 ? p[p.length - 1] : '')[0] || '');
+        }
+        // One coin. kind: gold | silver | bronze | navy
+        function trophyHtml(opts) {
+            var delay = (opts.i || 0) * -0.73;  // stagger so they don't spin in lockstep
+            return '<button type="button" class="trophy t-' + opts.kind + (opts.selected ? ' sel' : '') + '"' + opts.attr +
+                ' style="--d:' + delay.toFixed(2) + 's" aria-label="' + escapeHtml(opts.label) + '">' +
+                '<span class="t-stage"><span class="t-float"><span class="t-spin">' +
+                '<span class="t-face t-front">' + escapeHtml(opts.front) + '</span>' +
+                '<span class="t-face t-mid"></span>' +
+                '<span class="t-face t-back">' + escapeHtml(opts.back) + '</span>' +
+                '</span></span><span class="t-pedestal"></span></span>' +
+                '<span class="t-name">' + escapeHtml(opts.label) + '</span>' +
+                (opts.sub ? '<span class="t-sub">' + opts.sub + '</span>' : '') +
+                '</button>';
+        }
+        function showcaseHtml(t, body) {
+            return '<div class="showcase">' +
+                '<div class="sc-stage">' + trophyHtml(Object.assign({}, t, { attr: ' tabindex="-1"', selected: false, sub: '', i: 0 })).replace('class="trophy', 'class="trophy big') + '</div>' +
+                '<div class="sc-box">' + body + '</div></div>';
+        }
+
+        // ---- To file as a trophy shelf ----
+        var QSEL = null;
+        function queueGroups() {
+            var orgById = {};
             DB.organizations.forEach(function(o) { orgById[o.id] = o; });
             var mine = myLobbyistId();
-            var gaps = QUEUE.gaps.filter(function(g) { return !QUEUE.mineOnly || g.lobbyist_id === mine; });
-            var counts = { registration: 0, termination: 0 };
-            var groups = {};
-            gaps.forEach(function(g) {
+            var groups = {}, counts = { registration: 0, termination: 0 };
+            QUEUE.gaps.forEach(function(g) {
+                if (QUEUE.mineOnly && g.lobbyist_id !== mine) return;
                 var f = filingFor(g);
-                if (f && f.status === 'skip' && !QUEUE.showSkipped) return;
                 if (!f || f.status === 'generated') counts[g.action]++;
                 var k = g.action + '|' + g.org_id;
-                (groups[k] = groups[k] || { action: g.action, org: orgById[g.org_id] || { name: '?' }, orgId: g.org_id, rows: [] }).rows.push({ g: g, f: f });
+                (groups[k] = groups[k] || { key: k, action: g.action, org: orgById[g.org_id] || { name: '?' }, orgId: g.org_id, rows: [] }).rows.push({ g: g, f: f });
             });
+            Object.keys(groups).forEach(function(k) {
+                var grp = groups[k];
+                grp.todo = grp.rows.filter(function(r) { return !r.f || r.f.status === 'generated'; }).length;
+            });
+            return { groups: groups, counts: counts };
+        }
+        function groupTrophy(grp, i) {
+            var kind = !grp.todo ? 'bronze' : (grp.action === 'termination' ? 'silver' : 'gold');
+            return {
+                kind: kind, i: i, front: abbr(grp.org.name), back: grp.org.entityId ? '#' + grp.org.entityId : '—',
+                label: grp.org.name,
+                sub: grp.todo ? grp.todo + ' to file' : '✓ all filed',
+                attr: ' data-trophy="' + escapeHtml(grp.key) + '"', selected: grp.key === QSEL
+            };
+        }
+        function renderQueue() {
+            var box = document.getElementById('queueList');
+            var gc = queueGroups(), groups = gc.groups, counts = gc.counts;
             document.getElementById('queueCount').textContent = counts.registration + counts.termination;
-            document.getElementById('tofileBadge').textContent = counts.registration + counts.termination || '';
-            var html = '';
-            [['registration', 'Registrations needed', 'Staffed on the roster but not registered with the CFB.'],
-             ['termination', 'Terminations to review', 'Registered with the CFB, but nobody on the roster is staffed on this client. Confirm it ended before filing.']].forEach(function(sec) {
-                var gs = Object.keys(groups).map(function(k) { return groups[k]; }).filter(function(x) { return x.action === sec[0]; })
-                    .sort(function(a, b) { return (a.org.name || '').localeCompare(b.org.name || ''); });
-                html += '<h3>' + sec[1] + ' <span class="count">' + counts[sec[0]] + ' to do</span></h3><p class="lede" style="margin-top:-6px;">' + sec[2] + '</p>';
-                if (!gs.length) { html += '<div class="empty">Nothing here 🎉</div>'; return; }
-                gs.forEach(function(grp) {
-                    var todo = grp.rows.filter(function(r) { return !r.f || r.f.status === 'generated'; });
-                    html += '<div class="list-item" style="align-items:flex-start;"><div style="flex:1;min-width:0;">';
-                    html += '<h4>' + escapeHtml(grp.org.name) + (grp.org.entityId ? ' <small>#' + escapeHtml(grp.org.entityId) + '</small>' : '') + '</h4>';
-                    html += '<div class="queue-people">';
-                    grp.rows.sort(function(a, b) { return ((lobById[a.g.lobbyist_id] || {}).name || '').localeCompare((lobById[b.g.lobbyist_id] || {}).name || ''); })
-                    .forEach(function(r) {
-                        var l = lobById[r.g.lobbyist_id] || { name: '?' };
-                        var st = r.f ? r.f.status : 'todo';
-                        var key = escapeHtml(r.g.lobbyist_id + '|' + r.g.org_id + '|' + r.g.action);
-                        html += '<span class="qp qp-' + st + '">' + escapeHtml(shortName(l.name));
-                        if (st === 'todo') html += ' <button type="button" data-q-mark="filed" data-q-key="' + key + '" title="I filed this">Mark filed</button><button type="button" class="qx" data-q-mark="skip" data-q-key="' + key + '" title="Not needed">Skip</button>';
-                        else if (st === 'generated') html += ' · PDF made <button type="button" data-q-mark="filed" data-q-key="' + key + '">Mark filed</button>';
-                        else if (st === 'filed') html += ' · filed, waiting on CFB <button type="button" class="qx" data-q-undo="' + escapeHtml(r.f.id) + '">Undo</button>';
-                        else if (st === 'skip') html += ' · skipped <button type="button" class="qx" data-q-undo="' + escapeHtml(r.f.id) + '">Undo</button>';
-                        html += '</span>';
-                    });
-                    html += '</div></div>';
-                    if (todo.length) html += '<div><button type="button" data-q-open="' + escapeHtml(grp.action + '|' + grp.orgId) + '">Open form' + (todo.length > 1 ? 's (' + todo.length + ')' : '') + '</button></div>';
-                    html += '</div>';
-                });
+            document.getElementById('tofileBadge').textContent = (counts.registration + counts.termination) || '';
+            var list = Object.keys(groups).map(function(k) { return groups[k]; });
+            if (!QSEL || !groups[QSEL]) {
+                var first = list.filter(function(x) { return x.todo; }).sort(function(a, b) { return b.todo - a.todo; })[0] || list[0];
+                QSEL = first ? first.key : null;
+            }
+            var html = '<div id="showcase"></div>';
+            [['registration', 'Registrations needed', 'Staffed on the roster, not registered with the CFB'],
+             ['termination', 'Terminations to review', 'Registered, but nobody on the roster is staffed on this client. Confirm it ended first']].forEach(function(sec) {
+                var gs = list.filter(function(x) { return x.action === sec[0]; })
+                    .sort(function(a, b) { return (!a.todo) - (!b.todo) || (a.org.name || '').localeCompare(b.org.name || ''); });
+                html += '<div class="shelf-head"><span class="plate">' + sec[1] + '</span><span class="shelf-count">' + counts[sec[0]] + ' to file · ' + gs.length + ' clients</span></div>';
+                html += '<p class="shelf-note">' + sec[2] + '.</p>';
+                html += gs.length ? '<div class="shelf">' + gs.map(function(g, i) { return trophyHtml(groupTrophy(g, i)); }).join('') + '</div>'
+                                  : '<div class="empty">Shelf\'s empty. Nothing to file 🏆</div>';
             });
             box.innerHTML = html;
+            renderQueueShowcase(groups);
+            observeTrophies(box);            if (document.getElementById('lobShowcase')) renderLobbyistShowcase();  // refresh open-filing counts
         }
+        function renderQueueShowcase(groups) {
+            var sc = document.getElementById('showcase');
+            if (!sc) return;
+            var grp = (groups || queueGroups().groups)[QSEL];
+            if (!grp) { sc.innerHTML = ''; return; }
+            var lobById = {};
+            DB.lobbyists.forEach(function(l) { lobById[l.id] = l; });
+            var body = '<div class="sc-kicker">' + (grp.action === 'termination' ? 'Termination' : 'Registration') + (grp.org.entityId ? ' · CFB #' + escapeHtml(grp.org.entityId) : '') + '</div>';
+            body += '<h3 class="sc-title">' + escapeHtml(grp.org.name) + '</h3>';
+            body += '<p class="sc-desc">' + (grp.action === 'termination'
+                ? 'Still registered with the Campaign Finance Board, but nobody on the client roster is staffed here. If the work ended, each lobbyist files a termination statement (with a lobbyist report if there was activity this period).'
+                : 'On the client roster, but these lobbyists aren\'t registered for it yet. Registration is due within 5 days of starting to lobby.') + '</p>';
+            body += '<div class="queue-people">';
+            grp.rows.slice().sort(function(a, b) { return ((lobById[a.g.lobbyist_id] || {}).name || '').localeCompare((lobById[b.g.lobbyist_id] || {}).name || ''); })
+            .forEach(function(r) {
+                var l = lobById[r.g.lobbyist_id] || { name: '?' };
+                var st = r.f ? r.f.status : 'todo';
+                var key = escapeHtml(r.g.lobbyist_id + '|' + r.g.org_id + '|' + r.g.action);
+                body += '<span class="qp qp-' + st + '">' + escapeHtml(shortName(l.name));
+                if (st === 'todo') body += ' <button type="button" data-q-mark="filed" data-q-key="' + key + '">Mark filed</button><button type="button" class="qx" data-q-mark="skip" data-q-key="' + key + '">Skip</button>';
+                else if (st === 'generated') body += ' · PDF made <button type="button" data-q-mark="filed" data-q-key="' + key + '">Mark filed</button>';
+                else if (st === 'filed') body += ' · filed, waiting on CFB <button type="button" class="qx" data-q-undo="' + escapeHtml(r.f.id) + '">Undo</button>';
+                else if (st === 'skip') body += ' · skipped <button type="button" class="qx" data-q-undo="' + escapeHtml(r.f.id) + '">Undo</button>';
+                body += '</span>';
+            });
+            body += '</div>';
+            if (grp.todo) body += '<button type="button" class="gold" data-q-open="' + escapeHtml(grp.key) + '">Open form' + (grp.todo > 1 ? 's (' + grp.todo + ')' : '') + ' →</button>';
+            sc.innerHTML = showcaseHtml(groupTrophy(grp, 0), body);
+            document.querySelectorAll('#queueList .shelf .trophy').forEach(function(t) {
+                t.classList.toggle('sel', t.getAttribute('data-trophy') === QSEL);
+            });
+        }
+
+        // ---- Lobbyists as a collection ----
+        var LSEL = null;
+        function lobbyistTrophy(l, i) {
+            var miss = missingLobbyistFields(l).length;
+            return { kind: 'navy', i: i, front: initials(l.name), back: l.regNum ? '#' + l.regNum : '—', label: shortName(l.name),
+                sub: miss ? '<span class="warn-dot"></span>missing ' + miss : (l.regNum ? 'Reg #' + escapeHtml(l.regNum) : ''),
+                attr: ' data-lob-trophy="' + escapeHtml(l.id) + '"', selected: l.id === LSEL };
+        }
+        function renderLobbyists() {
+            var search = (document.getElementById('lobbyistSearch').value || '').toLowerCase();
+            var all = getLobbyists();
+            var list = !search ? all : all.filter(function(l) {
+                return (l.name || '').toLowerCase().indexOf(search) >= 0 || (l.email || '').toLowerCase().indexOf(search) >= 0 || (l.regNum || '').indexOf(search) >= 0;
+            });
+            document.getElementById('lobbyistCount').textContent = all.length;
+            var container = document.getElementById('lobbyistList');
+            if (!list.length) { container.innerHTML = '<div class="empty">No lobbyists found</div>'; return; }
+            if (!LSEL || !list.some(function(l) { return l.id === LSEL; })) LSEL = list[0].id;
+            container.innerHTML = '<div id="lobShowcase"></div><div class="shelf">' +
+                list.map(function(l, i) { return trophyHtml(lobbyistTrophy(l, i)); }).join('') + '</div>';
+            renderLobbyistShowcase();
+            observeTrophies(container);
+        }
+        function renderLobbyistShowcase() {
+            var sc = document.getElementById('lobShowcase');
+            var l = DB.lobbyists.find(function(x) { return x.id === LSEL; });
+            if (!sc || !l) return;
+            var miss = missingLobbyistFields(l);
+            var open = QUEUE.gaps.filter(function(g) { var f = filingFor(g); return g.lobbyist_id === l.id && (!f || f.status === 'generated'); }).length;
+            var body = '<div class="sc-kicker">Lobbyist' + (l.regNum ? ' · CFB reg #' + escapeHtml(l.regNum) : '') + '</div>';
+            body += '<h3 class="sc-title">' + escapeHtml(l.name) + '</h3>';
+            body += '<p class="sc-desc">' + escapeHtml(l.email || '') + (l.phone ? ' · ' + escapeHtml(l.phone) : '') + '<br>' +
+                escapeHtml([l.address1, l.address2, l.city].filter(Boolean).join(', ')) + (l.zip ? ' ' + escapeHtml(l.zip) : '') + '</p>';
+            if (miss.length) body += '<p class="sc-desc"><span class="warn-tag" style="margin:0;">Missing: ' + escapeHtml(miss.join(', ')) + '</span></p>';
+            body += '<p class="sc-desc"><b>' + open + '</b> open filing' + (open === 1 ? '' : 's') + ' in To file.</p>';
+            body += '<button type="button" class="gold" data-edit-lobbyist="' + escapeHtml(l.id) + '">Edit</button>' +
+                    '<button type="button" class="danger" data-delete-lobbyist="' + escapeHtml(l.id) + '">Delete</button>';
+            sc.innerHTML = showcaseHtml(lobbyistTrophy(l, 0), body);
+            document.querySelectorAll('#lobbyistList .shelf .trophy').forEach(function(t) {
+                t.classList.toggle('sel', t.getAttribute('data-lob-trophy') === LSEL);
+            });
+        }
+
         async function markFiling(key, status) {
             var p = key.split('|');
             var row = { lobbyist_id: p[0], org_id: p[1], action: p[2], status: status };
@@ -859,45 +1051,6 @@
             if (!confirm('Delete this lobbyist?')) return;
             saveLobbyistsData(getLobbyists().filter(function(l) { return l.id !== id; }));
             renderLobbyists();
-        }
-
-        function renderLobbyists() {
-            var search = (document.getElementById('lobbyistSearch').value || '').toLowerCase();
-            var list = getLobbyists();
-            if (search) {
-                list = list.filter(function(l) {
-                    return (l.name || '').toLowerCase().indexOf(search) >= 0 ||
-                        (l.email || '').toLowerCase().indexOf(search) >= 0 ||
-                        (l.regNum || '').indexOf(search) >= 0;
-                });
-            }
-
-            document.getElementById('lobbyistCount').textContent = getLobbyists().length;
-            var container = document.getElementById('lobbyistList');
-            if (list.length === 0) {
-                container.innerHTML = '<div class="empty">No lobbyists found</div>';
-                return;
-            }
-
-            var html = '';
-            for (var i = 0; i < list.length; i++) {
-                var l = list[i];
-                html += '<div class="list-item">';
-                html += '<div>';
-                html += '<h4>';
-                if (l.regNum) html += '<span class="reg-badge">#' + escapeHtml(l.regNum) + '</span>';
-                html += escapeHtml(l.name);
-                if (l.fromCFB) html += '<span class="cfb-badge">CFB</span>';
-                if (missingLobbyistFields(l).length) html += '<span class="warn-tag">missing ' + missingLobbyistFields(l).length + '</span>';
-                html += '</h4>';
-                html += '<p>' + escapeHtml(l.email) + ' | ' + escapeHtml(l.phone) + '</p>';
-                html += '</div>';
-                html += '<div>';
-                html += '<button class="secondary" data-edit-lobbyist="' + escapeHtml(l.id) + '">Edit</button>';
-                html += '<button class="danger" data-delete-lobbyist="' + escapeHtml(l.id) + '">Delete</button>';
-                html += '</div></div>';
-            }
-            container.innerHTML = html;
         }
 
         // ===== ORGANIZATIONS =====
@@ -2418,6 +2571,10 @@
 
             if (target.hasAttribute('data-preview-pdf')) previewPDF(parseInt(target.getAttribute('data-preview-pdf')));
             if (target.hasAttribute('data-download-zip')) downloadZip();
+            var tro = target.closest && target.closest('[data-trophy]');
+            if (tro) { QSEL = tro.getAttribute('data-trophy'); renderQueueShowcase(); if (window.innerWidth < 640) document.getElementById('showcase').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+            var ltro = target.closest && target.closest('[data-lob-trophy]');
+            if (ltro) { LSEL = ltro.getAttribute('data-lob-trophy'); renderLobbyistShowcase(); if (window.innerWidth < 640) document.getElementById('lobShowcase').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
             if (target.hasAttribute('data-q-mark')) markFiling(target.getAttribute('data-q-key'), target.getAttribute('data-q-mark'));
             if (target.hasAttribute('data-q-undo')) undoFiling(target.getAttribute('data-q-undo'));
             if (target.hasAttribute('data-q-open')) openFromQueue(target.getAttribute('data-q-open'));
