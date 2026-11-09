@@ -6,6 +6,7 @@
     <title>Lobbyist Registration · Momentum Advocacy</title>
     <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
     <script src="https://unpkg.com/jszip@3.10.1/dist/jszip.min.js"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2.119.0/dist/umd/supabase.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -184,6 +185,22 @@
         .missing b{color:#7a5b00}
         .missing button{margin:6px 0 0;padding:5px 12px;font-size:12px}
         .generated-form-item .acts{display:flex;gap:6px}
+        .google-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;background:#fff !important;color:var(--ink) !important;border:1px solid var(--line) !important;font-weight:700;padding:12px !important}
+        .google-btn:hover{border-color:var(--navy) !important;box-shadow:none !important}
+        .google-btn svg{width:18px;height:18px}
+        .user-chip{display:flex;align-items:center;gap:10px;font-size:12px;color:#c9d3e0}
+        .user-chip button{margin:0;padding:5px 12px;font-size:11.5px;background:transparent;border-color:#47648a;color:var(--cream)}
+        .user-chip button:hover{border-color:var(--gold);box-shadow:none;background:transparent}
+        #saveState{color:var(--gold);font-weight:600}
+        .tab .badge{display:inline-block;background:var(--gold);color:var(--navy);border-radius:999px;font-size:10.5px;font-weight:800;padding:1px 7px;margin-left:6px;vertical-align:1px}
+        .tab .badge:empty{display:none}
+        .queue-people{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+        .qp{display:inline-flex;align-items:center;gap:6px;background:var(--cream);border:1px solid var(--line);border-radius:999px;padding:4px 6px 4px 12px;font-size:12.5px;font-weight:600;color:var(--navy)}
+        .qp button{margin:0;padding:3px 10px;font-size:11px}
+        .qp button.qx{background:var(--paper);color:var(--muted);border-color:var(--line)}
+        .qp-filed{background:var(--ok-soft);border-color:#c3dfcc;color:var(--ok);padding-right:6px}
+        .qp-skip{opacity:.6;text-decoration:line-through}
+        .qp-generated{background:var(--gold-soft);border-color:#f1d98a}
         footer{background:var(--navy);color:#c9d3e0;font-size:12px;border-top:3px solid var(--gold)}
         footer .container{padding-top:20px;padding-bottom:26px;display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-between}
         footer b{color:var(--cream)}
@@ -197,17 +214,17 @@
 </head>
 <body>
     <!-- Login Screen -->
-    <div id="loginScreen">
+    <div id="loginScreen" style="display:none">
         <div class="login-card">
             <img src="momentum-logo.png" alt="Momentum Advocacy" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'wordmark',textContent:'momentum advocacy',style:'text-align:center;margin-bottom:16px'}))">
             <h1>Lobbyist Registration</h1>
-            <p>Minnesota CFB forms · please log in</p>
-            <form id="loginForm">
-                <div class="form-group"><label>Username</label><input type="text" id="loginUsername" required></div>
-                <div class="form-group"><label>Password</label><input type="password" id="loginPassword" required></div>
-                <div id="loginError">Invalid username or password</div>
-                <button type="submit">Log In</button>
-            </form>
+            <p>Minnesota CFB forms</p>
+            <button type="button" id="googleBtn" class="google-btn">
+                <svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+                Sign in with Google
+            </button>
+            <div id="loginError"></div>
+            <p style="margin:14px 0 0;font-size:11.5px;">Momentum Advocacy accounts only.</p>
         </div>
     </div>
 
@@ -229,10 +246,11 @@
                         <button id="syncBtn">Sync from CFB</button>
                         <span id="syncStatus"></span>
                     </div>
-                    <div>Forms follow the official CFB layout</div>
+                    <div class="user-chip"><span id="saveState"></span><span id="whoami"></span><button type="button" id="signOutBtn">Sign out</button></div>
                 </div>
                 <nav class="tabs">
-                    <button class="tab active" data-tab="lobbyists">Lobbyists</button>
+                    <button class="tab active" data-tab="tofile">To file<span class="badge" id="tofileBadge"></span></button>
+                    <button class="tab" data-tab="lobbyists">Lobbyists</button>
                     <button class="tab" data-tab="organizations">Organizations</button>
                     <button class="tab" data-tab="generate">Generate Forms</button>
                 </nav>
@@ -243,7 +261,19 @@
     <main class="container">
 
         <!-- Lobbyists Tab -->
-        <div id="lobbyists-tab" class="tab-content active">
+        <div id="tofile-tab" class="tab-content active">
+            <h2>To file <span class="count" id="queueCount"></span></h2>
+            <div class="list-head" style="margin-top:-6px;">
+                <p class="lede" style="margin:0;flex:1;">Gaps between the client roster and what's registered with the CFB. Open a form, file it, then mark it filed.</p>
+                <div class="quickpick" style="margin:0;">
+                    <button type="button" id="mineOnlyBtn">Only mine</button>
+                    <button type="button" id="refreshQueueBtn">Refresh</button>
+                </div>
+            </div>
+            <div id="queueList"><div class="empty">Sign in to see what needs filing.</div></div>
+        </div>
+
+        <div id="lobbyists-tab" class="tab-content">
             <h2>Lobbyists <span class="count" id="lobbyistCount"></span></h2>
             <div class="list-head">
                 <div class="search-box"><input type="text" id="lobbyistSearch" placeholder="Search by name, email or reg #..."></div>
@@ -433,8 +463,9 @@
 
     <script>
         // ===== CONSTANTS =====
-        const VALID_USERNAME = 'momentum';
-        const VALID_PASSWORD = 'advocacy';
+        // Supabase project (publishable key is safe in the browser; access is enforced by row-level security)
+        const SUPABASE_URL = 'https://dnpiqcoevydgpxylfkvt.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_BaajXiDuO_JFigXpppPIMA_lvnKeVW3';
         // Update this URL to your GitHub raw content URL where signatures are hosted
         const SIGNATURE_BASE_URL = 'https://raw.githubusercontent.com/sandbergynick/momentum/main/Signatures/';
 
@@ -449,101 +480,7 @@
         ];
 
         const CFB_PDF_URL = 'https://cfb.mn.gov/pdf/forms/lobbyist/lob_registration.pdf';
-        const DEFAULT_LOBBYISTS = [
-            { id: '1', regNum: '6014', name: 'Nicholas Sandberg', email: 'nsandberg@momentum-advocacy.com', phone: '651-332-0903', employer: 'Momentum Advocacy', address1: '4530 W 77th St', address2: 'Ste 305', city: 'Edina', state: 'MN', zip: '55435' },
-            { id: '2', regNum: '3577', name: 'Amy Koch', email: 'akoch@momentum-advocacy.com', phone: '763-300-8492', employer: 'Momentum Advocacy', address1: '4530 W 77th St', address2: 'Ste 305', city: 'Edina', state: 'MN', zip: '55435' },
-            { id: '3', regNum: '4152', name: 'Natalia Madryga', email: 'nmadryga@momentum-advocacy.com', phone: '952-693-1329', employer: 'Momentum Advocacy', address1: '4530 W 77th St', address2: 'Ste 305', city: 'Edina', state: 'MN', zip: '55435' },
-            { id: '4', regNum: '4920', name: 'Isabella Rojas', email: 'irojas@momentum-advocacy.com', phone: '651-262-4922', employer: 'Momentum Advocacy', address1: '4530 W 77th St', address2: 'Ste 305', city: 'Edina', state: 'MN', zip: '55435' },
-            { id: '5', regNum: '5119', name: 'Will Waggoner', email: 'wwaggoner@momentum-advocacy.com', phone: '507-206-1711', employer: 'Momentum Advocacy', address1: '4530 W 77th St', address2: 'Ste 305', city: 'Edina', state: 'MN', zip: '55435' },
-            { id: '6', regNum: '1140', name: 'Brian R. McDaniel', email: 'bmcdaniel@momentum-advocacy.com', phone: '952-239-3612', employer: 'Momentum Advocacy', address1: '4530 W 77th St', address2: 'Ste 305', city: 'Edina', state: 'MN', zip: '55435' },
-            { id: '7', regNum: '5979', name: 'Alexis Kise', email: 'akise@momentum-advocacy.com', phone: '612-695-7715', employer: 'Momentum Advocacy', address1: '4530 W 77th St', address2: 'Ste 305', city: 'Edina', state: 'MN', zip: '55435' },
-            { id: '8', regNum: '4519', name: 'Alysen L. Nesse', email: 'alysen@momentum-advocacy.com', phone: '763-639-0226', employer: 'Momentum Advocacy', address1: '4530 W 77th St', address2: 'Ste 305', city: 'Edina', state: 'MN', zip: '55435' },
-            { id: '9', regNum: '1394', name: 'Michael A. Franklin', email: 'mfranklin@momentum-advocacy.com', phone: '218-879-5815', employer: 'Momentum Advocacy', address1: '4530 W 77th St', address2: 'Ste 305', city: 'Edina', state: 'MN', zip: '55435' },
-            { id: '10', regNum: '6015', name: 'Kayla Drake', email: 'kdrake@momentum-advocacy.com', phone: '314-448-8064', employer: 'Momentum Advocacy', address1: '4530 W 77th St', address2: 'Ste 305', city: 'Edina', state: 'MN', zip: '55435' }
-        ];
-        
-        const DEFAULT_ORGANIZATIONS = [
-              {"id": "1", "entityId": "1549", "name": "American Civil Liberties Union of MN", "address": "PO Box 14720", "city": "Minneapolis", "state": "MN", "zip": "55414", "phone": "(651) 645-4097", "website": "www.aclu-mn.org", "contactName": "Munira Mohamed Executive Director", "contactEmail": "MMohamed@aclu-mn.org", "contactPhone": "(651) 645-4097", "officers": [], "categories": []},
-              {"id": "2", "entityId": "4636", "name": "American Heart Assn", "address": "2750 Blue Water Rd. Ste. 250", "city": "Eagan", "state": "MN", "zip": "55121", "phone": "(614) 271-0699", "website": "www.heart.org", "contactName": "Paul Weirtz State Government Relations Director", "contactEmail": "Paul.weirtz@heart.org", "contactPhone": "614-271-0699", "officers": [], "categories": []},
-              {"id": "3", "entityId": "3771", "name": "Arc Minnesota Inc.", "address": "641 Fairview Ave N Suite 195", "city": "St Paul", "state": "MN", "zip": "55104", "phone": "(612) 965-0969", "website": "https://arcminnesota.org/", "contactName": "Tina Rucci Public Policy Director", "contactEmail": "tinarucci@arcminnesota.org", "contactPhone": "612-965-0969", "officers": [], "categories": []},
-              {"id": "4", "entityId": "61", "name": "Assn of Minnesota Counties", "address": "125 Charles Ave", "city": "St Paul", "state": "MN", "zip": "55103", "phone": "(651) 789-4338", "website": "www.mncounties.org", "contactName": "Matt Hilgart Deputy Director Government Relations", "contactEmail": "mhilgart@mncounties.org", "contactPhone": "612-805-5088", "officers": [], "categories": []},
-              {"id": "5", "entityId": "8400", "name": "Bitcoin Depot Operating LLC", "address": "2870 Peachtree Rd NW #327", "city": "Atlanta", "state": "GA", "zip": "30305", "phone": "(678) 671-6723", "website": "www.bitcoindepot.com", "contactName": "Ethan McClelland Director of Government Relations", "contactEmail": "ethan.mcclelland@bitcoindepot.com", "contactPhone": "202-423-5608", "officers": [], "categories": []},
-              {"id": "6", "entityId": "6905", "name": "Blood Cancer United Inc.", "address": "10 G St NE Ste 400", "city": "Washington", "state": "DC", "zip": "20002", "phone": "(651) 293-1283", "website": "www.lls.org", "contactName": "Dana Bacon Director State Government Affairs", "contactEmail": "dana.bacon@bloodcancerunited.org", "contactPhone": "612-308-0479", "officers": [], "categories": []},
-              {"id": "7", "entityId": "7352", "name": "Blue Ox Media Group", "address": "11443 ZACHARY LANE N", "city": "Maple Grove", "state": "MN", "zip": "55369", "phone": "(612) 382-2026", "website": "blueoxmediagroup.com", "contactName": "Tom McCarver CEO", "contactEmail": "tmccarver@blueoxmediagroup.com", "contactPhone": "612-382-2026", "officers": [], "categories": []},
-              {"id": "8", "entityId": "8828", "name": "Circular Action Alliance", "address": "", "city": "", "state": "MN", "zip": "", "phone": "", "website": "", "contactName": "", "contactEmail": "", "contactPhone": "", "officers": [], "categories": []},
-              {"id": "9", "entityId": "7933", "name": "Carvana", "address": "930 W Rio Salado Pkwy", "city": "Tempe", "state": "AZ", "zip": "85281", "phone": "(573) 644-4262", "website": "www.carvana.com", "contactName": "Casey Garber Head of Government Affairs Midwest Region", "contactEmail": "casey.garber@carvana.com", "contactPhone": "(573) 644-4262", "officers": [], "categories": []},
-              {"id": "10", "entityId": "1043", "name": "Catholic Charities of St Paul and Minneapolis", "address": "1007 E 14th St", "city": "Minneapolis", "state": "MN", "zip": "55404", "phone": "(612) 204-8500", "website": "www.cctwincities.org", "contactName": "Elizabeth Lyden VP of Engagement", "contactEmail": "elizabeth.lyden@cctwincities.org", "contactPhone": "651-757-7764", "officers": [], "categories": []},
-              {"id": "11", "entityId": "8660", "name": "Channel One Food Bank", "address": "131 35th St. SE", "city": "Rochester", "state": "MN", "zip": "55904", "phone": "(507) 424-1721", "website": "helpingfeedpeople.org", "contactName": "Virginia Witherspoon Executive Director", "contactEmail": "virginiawitherspoon@channel-one.org", "contactPhone": "515-480-4453", "officers": [], "categories": []},
-              {"id": "12", "entityId": "3211", "name": "Brooklyn Park City of", "address": "5200 85th Ave N", "city": "Brooklyn Park", "state": "MN", "zip": "55443", "phone": "(763) 424-8002", "website": "www.brooklynpark.org", "contactName": "Jay Stroebel City Manager", "contactEmail": "jay.stroebel@brooklynpark.org", "contactPhone": "(763) 424-8002", "officers": [], "categories": []},
-              {"id": "13", "entityId": "", "name": "Delano City of", "address": "", "city": "", "state": "MN", "zip": "", "phone": "", "website": "", "contactName": "", "contactEmail": "", "contactPhone": "", "officers": [], "categories": []},
-              {"id": "14", "entityId": "6982", "name": "Grand Rapids City of", "address": "420 N Pokegama Ave", "city": "Grand Rapids", "state": "MN", "zip": "55744", "phone": "(218) 326-7626", "website": "www.cityofgrandrapidsmn.com", "contactName": "Tom Pagel City Administrator", "contactEmail": "tpagel@grandrapidsmn.gov", "contactPhone": "(218) 326-7626", "officers": [], "categories": []},
-              {"id": "15", "entityId": "", "name": "Jordan City of", "address": "", "city": "", "state": "MN", "zip": "", "phone": "", "website": "", "contactName": "", "contactEmail": "", "contactPhone": "", "officers": [], "categories": []},
-              {"id": "16", "entityId": "2256", "name": "Minneapolis City of", "address": "350 S 5th St", "city": "Minneapolis", "state": "MN", "zip": "55415", "phone": "(612) 364-4657", "website": "http://www.minneapolismn.gov/city-coordinator/igr.asp", "contactName": "Katie Topinka Director of Intergovernmental Relations", "contactEmail": "katie.topinka@minneapolismn.gov", "contactPhone": "(612) 364-4657", "officers": [], "categories": []},
-              {"id": "17", "entityId": "3501", "name": "St Louis Park City of", "address": "4009 E Lake St", "city": "Minneapolis", "state": "MN", "zip": "55406", "phone": "(218) 428-0503", "website": "100percentmn.org", "contactName": "Clancy Ferris Legislative and Grants Analyst", "contactEmail": "cferris@stlouisparkmn.gov", "contactPhone": "(218) 428-0503", "officers": [], "categories": []},
-              {"id": "18", "entityId": "8204", "name": "Wyoming City of", "address": "26885 Forest Blvd", "city": "Wyoming", "state": "MN", "zip": "55092", "phone": "(651) 462-0575", "website": "www.wyomingmn.org", "contactName": "Robb Linwood City Administrator", "contactEmail": "RLinwood@wyomingmn.org", "contactPhone": "612-232-5863", "officers": [], "categories": []},
-              {"id": "19", "entityId": "5409", "name": "Clare Housing Inc.", "address": "929 Central Ave NE", "city": "Minneapolis", "state": "MN", "zip": "55413", "phone": "(612) 236-9521", "website": "www.clarehousing.org", "contactName": "Pheobe Trepp Executive Director", "contactEmail": "phoebe.trepp@clarehousing.org", "contactPhone": "(612) 236-9521", "officers": [], "categories": []},
-              {"id": "20", "entityId": "6929", "name": "College Possible", "address": "755 Prior Ave N Ste 210", "city": "St Paul", "state": "MN", "zip": "55104", "phone": "(765) 277-2424", "website": "www.collegepossible.org", "contactName": "Dawn Schnitkey Senior Finance Director", "contactEmail": "", "contactPhone": "", "officers": [], "categories": []},
-              {"id": "21", "entityId": "8594", "name": "MN Conservative Energy Forum", "address": "200 Southdale Ctr", "city": "Edina", "state": "MN", "zip": "55435", "phone": "(507) 381-3671", "website": "http://www.mncef.com/", "contactName": "Rachel Stuckey Executive Director", "contactEmail": "rstuckey@mncef.com", "contactPhone": "507-381-3671", "officers": [], "categories": []},
-              {"id": "22", "entityId": "7762", "name": "COPAL (Comunidades organizando el poder y acción Latina)", "address": "3702 E Lake St", "city": "Minneapolis", "state": "MN", "zip": "55406", "phone": "(612) 806-1791", "website": "copalmn.org", "contactName": "Carolina Ortiz Associate Executive Director", "contactEmail": "cortiz@copalmn.org", "contactPhone": "(612) 806-1791", "officers": [], "categories": []},
-              {"id": "23", "entityId": "", "name": "Down Ballot - PA", "address": "", "city": "", "state": "MN", "zip": "", "phone": "", "website": "", "contactName": "", "contactEmail": "", "contactPhone": "", "officers": [], "categories": []},
-              {"id": "24", "entityId": "", "name": "Education Partnership Coalition (United Way)", "address": "", "city": "", "state": "MN", "zip": "", "phone": "", "website": "", "contactName": "John Fanning", "contactEmail": "john.fanning@gtcuw.org", "contactPhone": "", "officers": [], "categories": []},
-              {"id": "25", "entityId": "6930", "name": "Emerge Community Development", "address": "1834 Emerson Ave N", "city": "Minneapolis", "state": "MN", "zip": "55411", "phone": "(612) 669-6744", "website": "www.emerge-mn.org", "contactName": "Mike Wynne President CEO", "contactEmail": "WynneM@emerge-mn.org", "contactPhone": "612-669-6744", "officers": [], "categories": []},
-              {"id": "26", "entityId": "6721", "name": "Meridian Behavioral Health (EOSIS)", "address": "550 Main St Ste 230", "city": "New Brighton", "state": "MN", "zip": "55112", "phone": "(763) 245-8278", "website": "www.EOSISrecovery.com", "contactName": "Lew Zeidner CEO", "contactEmail": "lew.zeidner@eosisrecovery.com", "contactPhone": "(763) 245-8278", "officers": [], "categories": []},
-              {"id": "27", "entityId": "8167", "name": "Fantasy Sports Operator Coalition", "address": "2200 WILSON BLVD", "city": "Arlington", "state": "VA", "zip": "22209", "phone": "(202) 849-9002", "website": "https://coalitionforfantasysports.com/", "contactName": "Kayla Lott Senior Strategist", "contactEmail": "klott@redrockstrategies.com", "contactPhone": "845-476-4560", "officers": [], "categories": []},
-              {"id": "28", "entityId": "2730", "name": "Girl Scouts River Valleys", "address": "400 Robert St S", "city": "St Paul", "state": "MN", "zip": "55107", "phone": "(800) 845-0787", "website": "www.girlscoutsrv.org", "contactName": "Hli Xyooj Vice President of Compliance", "contactEmail": "hli.xyooj@girlscoutsrv.org", "contactPhone": "(800) 845-0787", "officers": [], "categories": []},
-              {"id": "29", "entityId": "7787", "name": "The Good Food Institute", "address": "2503 D. N Harrison St. #19", "city": "Arlington", "state": "VA", "zip": "22209", "phone": "(518) 698-1490", "website": "www.gfi.org", "contactName": "Pepin Tuma VP Policy and Government Relations", "contactEmail": "pepin@gfi.org", "contactPhone": "202-876-6255", "officers": [], "categories": []},
-              {"id": "30", "entityId": "7918", "name": "Greater MN Children's Museums", "address": "224 Lamm Street", "city": "Mankato", "state": "MN", "zip": "56003", "phone": "(507) 344-9108", "website": "https://www.cmsouthernmn.org/", "contactName": "Jill Measells CEO The Works", "contactEmail": "jill@theworks.org", "contactPhone": "952-454-4547", "officers": [], "categories": []},
-              {"id": "31", "entityId": "4484", "name": "Greater MN Housing Fund", "address": "332 Minnesota St #1650W", "city": "St Paul", "state": "MN", "zip": "55101", "phone": "(651) 221-1997", "website": "www.gmhf.com", "contactName": "Andrea Brennan President/CEO", "contactEmail": "Abrennan@gmhf.com", "contactPhone": "(651) 221-1997", "officers": [], "categories": []},
-              {"id": "32", "entityId": "1523", "name": "Greater Twin Cities United Way", "address": "404 S 8th St", "city": "Minneapolis", "state": "MN", "zip": "55404", "phone": "(612) 340-7400", "website": "www.gtcuw.org", "contactName": "Stephannie Lewis Assoc VP Advocacy & Community Impact & Operations Lead", "contactEmail": "stephannie.lewis@gtcuw.org", "contactPhone": "(612) 340-7400", "officers": [], "categories": []},
-              {"id": "33", "entityId": "5864", "name": "Hearth Connection", "address": "2446 University Ave W", "city": "St Paul", "state": "MN", "zip": "55114", "phone": "(612) 559-4255", "website": "www.hearthconnection.org", "contactName": "Marcus Schmit Executive Director", "contactEmail": "marcus@hearthconnection.org", "contactPhone": "(612) 559-4255", "officers": [], "categories": []},
-              {"id": "34", "entityId": "6055", "name": "Hmong American Partnership", "address": "394 University Ave, 2nd Floor", "city": "St Paul", "state": "MN", "zip": "55103", "phone": "(651) 495-9160", "website": "www.hmong.org", "contactName": "May yer Thao President CEO", "contactEmail": "mayyer.hap@hmong.org", "contactPhone": "(651) 495-9160", "officers": [], "categories": []},
-              {"id": "35", "entityId": "", "name": "Housing Stability Coalition", "address": "", "city": "", "state": "MN", "zip": "", "phone": "", "website": "", "contactName": "", "contactEmail": "", "contactPhone": "", "officers": [], "categories": []},
-              {"id": "36", "entityId": "3091", "name": "Intl Business Machines Corp (IBM)", "address": "One New Orchard Road", "city": "Armonk", "state": "NY", "zip": "10504", "phone": "(415) 903-2800", "website": "www.ibm.com", "contactName": "Erin Lama Designated Agent for Filer", "contactEmail": "ibm@politicomlaw.com", "contactPhone": "415-903-2800", "officers": [], "categories": []},
-              {"id": "37", "entityId": "8138", "name": "LatinoLEAD", "address": "797 E 7th St Ste 151", "city": "St Paul", "state": "MN", "zip": "55106", "phone": "(507) 995-3485", "website": "latinoleadmn.org", "contactName": "Irma Marques Trapero Executive Director", "contactEmail": "info@latinoleadmn.org", "contactPhone": "(507) 995-3485", "officers": [], "categories": []},
-              {"id": "38", "entityId": "7805", "name": "Latino Economic Development Center", "address": "804 Margaret St", "city": "St Paul", "state": "MN", "zip": "55106", "phone": "(612) 724-5332", "website": "www.ledcmn.org", "contactName": "Alma Flores Executive Director", "contactEmail": "alma@ledcmn.org", "contactPhone": "(612) 724-5332", "officers": [], "categories": []},
-              {"id": "39", "entityId": "4528", "name": "Local Public Health Assn of MN", "address": "125 Charles Ave", "city": "St Paul", "state": "MN", "zip": "55103", "phone": "(651) 789-4354", "website": "www.lpha-mn.org", "contactName": "Kari Oldfield Director", "contactEmail": "koldfield@mncounties.org", "contactPhone": "507-254-5787", "officers": [], "categories": []},
-              {"id": "40", "entityId": "8042", "name": "Metropolitan Alliance of Connected Communities (MACC)", "address": "3433 Broadway St NE, Ste 230", "city": "Minneapolis", "state": "MN", "zip": "55413", "phone": "(612) 341-1668", "website": "www.macc-mn.org", "contactName": "Trisha Reinwald VP of Member Advancement", "contactEmail": "Trisha.Reinwald@macc-MN.org", "contactPhone": "612-859-3553", "officers": [], "categories": []},
-              {"id": "41", "entityId": "5799", "name": "MN Assn of Criminal Defense Lawyers", "address": "10201 Wayzata Blvd Ste 260", "city": "Minnetonka", "state": "MN", "zip": "55305", "phone": "(612) 332-3100", "website": "www.macdl.legal", "contactName": "Jill Oleisky Executive Director", "contactEmail": "jill@oleisky.com", "contactPhone": "(612) 332-3100", "officers": [], "categories": []},
-              {"id": "42", "entityId": "7241", "name": "Mesabi Metallics Company LLC", "address": "17113 Cnty Rd 58", "city": "Nashwauk", "state": "MN", "zip": "55769", "phone": "(218) 885-6000", "website": "www.mesabimetallics.com", "contactName": "Larry Sutherland COO", "contactEmail": "larry.sutherland@mesabimetallics.com", "contactPhone": "(218) 885-6000", "officers": [], "categories": []},
-              {"id": "43", "entityId": "5687", "name": "Minneapolis Foundation", "address": "80 S 8th St #800 IDS Center", "city": "Minneapolis", "state": "MN", "zip": "55410", "phone": "(612) 672-3878", "website": "www.minneapolisfoundation.org", "contactName": "Patrice Relerford VP of Collective Impact and Giving", "contactEmail": "prelerford@mplsfoundation.org", "contactPhone": "(612) 672-3878", "officers": [], "categories": []},
-              {"id": "44", "entityId": "875", "name": "MN Licensed Beverage Assn Inc. (MLBA)", "address": "475 Etna St Ste 11", "city": "St Paul", "state": "MN", "zip": "55106", "phone": "(651) 772-0910", "website": "www.mlba.com", "contactName": "Anthony M Chesak Executive Director", "contactEmail": "tony@mlba.com", "contactPhone": "651-470-7236", "officers": [], "categories": []},
-              {"id": "45", "entityId": "534", "name": "MN Municipal Beverage Assn", "address": "PO Box 32966", "city": "Minneapolis", "state": "MN", "zip": "55432", "phone": "(763) 572-0222", "website": "municipalbev.com", "contactName": "Paul Kaspzsak Executive Director", "contactEmail": "kaspszak@outlook.com", "contactPhone": "612-799-1629", "officers": [], "categories": []},
-              {"id": "46", "entityId": "439", "name": "MN Asphalt Pavement Assn", "address": "1601 Utica Ave S Ste 213", "city": "Minneapolis", "state": "MN", "zip": "55416", "phone": "(952) 292-7035", "website": "www.asphaltisbest.com", "contactName": "Abbey Bryduck Executive Director", "contactEmail": "abryduck@mnapa.org", "contactPhone": "952-250-1861", "officers": [], "categories": []},
-              {"id": "47", "entityId": "5781", "name": "MN Athletic Trainers Assn (MATA)", "address": "9801 Dupont Ave S Ste 250", "city": "Bloomington", "state": "MN", "zip": "55413", "phone": "(612) 750-3524", "website": "www.mnata.com", "contactName": "Joshua Pinkey President", "contactEmail": "jpinkney.atc@gmail.com", "contactPhone": "(612) 750-3524", "officers": [], "categories": []},
-              {"id": "48", "entityId": "3168", "name": "MN Coalition for the Homeless", "address": "2233 University Ave W", "city": "St Paul", "state": "MN", "zip": "55114", "phone": "(651) 645-7332", "website": "www.mnhomelesscoalition.org", "contactName": "Matt Trainor Executive Director", "contactEmail": "matt@mnhomelesscoalition.org", "contactPhone": "(651) 645-7332", "officers": [], "categories": []},
-              {"id": "49", "entityId": "1778", "name": "MN Land Title Assn", "address": "1250 N Frontage Rd", "city": "Hastings", "state": "MN", "zip": "55033", "phone": "(651) 304-3501", "website": "www.mlta.org", "contactName": "Adam Schad Legislative Committee", "contactEmail": "aschad@firstam.com", "contactPhone": "320-420-8779", "officers": [], "categories": []},
-              {"id": "50", "entityId": "552", "name": "MN Nurses Assn", "address": "345 Randolph Ave Ste 200", "city": "St Paul", "state": "MN", "zip": "55102", "phone": "(651) 414-2838", "website": "www.mnnurses.org", "contactName": "Shannon Cunningham Director of Governmental & Community Relations", "contactEmail": "Shannon.cunningham@mnnurses.org", "contactPhone": "651-269-1418", "officers": [], "categories": []},
-              {"id": "51", "entityId": "6881", "name": "MN Adult & Teen Challenge", "address": "740 E 24th St", "city": "Minneapolis", "state": "MN", "zip": "55404", "phone": "(612) 373-3366", "website": "www.mntc.org", "contactName": "Eric Vagle President", "contactEmail": "eric.vagle@mntc.org", "contactPhone": "952-217-7684", "officers": [], "categories": []},
-              {"id": "52", "entityId": "4600", "name": "MN Assn of Community Health Centers", "address": "2550 University Ave. W", "city": "St Paul", "state": "MN", "zip": "55114", "phone": "(612) 859-3285", "website": "www.mnachc.org", "contactName": "Jonathan Watson CEO", "contactEmail": "jonathan.watson@mnachc.org", "contactPhone": "(612) 859-3285", "officers": [], "categories": []},
-              {"id": "53", "entityId": "6459", "name": "MN Assn for Family and Early Education", "address": "2738 Evergreen Cir", "city": "St Paul", "state": "MN", "zip": "55110", "phone": "(651) 278-4241", "website": "www.mnafee.org", "contactName": "Gretchen Dullinger Advocacy Committee", "contactEmail": "DullingerG@district279.org", "contactPhone": "612-991-7160", "officers": [], "categories": []},
-              {"id": "54", "entityId": "1921", "name": "MN Tech Assn", "address": "7760 France Avenue South", "city": "Minneapolis", "state": "MN", "zip": "55435", "phone": "(952) 230-4555", "website": "www.mntech.org", "contactName": "Joel Crandall CEO", "contactEmail": "joel@mntech.org", "contactPhone": "612-423-6256", "officers": [], "categories": []},
-              {"id": "55", "entityId": "8745", "name": "Purfoods LLC dba Moms Meals", "address": "3210 SE Corporate Woods Drive", "city": "Ankey", "state": "IA", "zip": "50010", "phone": "(515) 231-4766", "website": "https://www.momsmeals.com", "contactName": "Kayla Pearson Government Affairs", "contactEmail": "kayla.pearson@momsmeals.com", "contactPhone": "(515) 231-4766", "officers": [], "categories": []},
-              {"id": "56", "entityId": "1018", "name": "MN Psychiatric Society", "address": "2738 Evergreen Circle", "city": "St Paul", "state": "MN", "zip": "55110", "phone": "(651) 278-4241", "website": "www.mnpsychsoc.org", "contactName": "Linda Vukelich Executive Director", "contactEmail": "lmvukelich@gmail.com", "contactPhone": "(651) 278-4241", "officers": [], "categories": []},
-              {"id": "57", "entityId": "8494", "name": "Neighbors Inc.", "address": "222 Grand Ave. N", "city": "St Paul", "state": "MN", "zip": "55075", "phone": "(651) 272-1135", "website": "www.neighbors.org", "contactName": "Dawn Wambeke Executive Director", "contactEmail": "dawn@neighborsmn.org", "contactPhone": "507-828-5350", "officers": [], "categories": []},
-              {"id": "58", "entityId": "6882", "name": "NextEra Energy Resources LLC", "address": "700 Universe Blvd", "city": "Juno Beach", "state": "FL", "zip": "33408", "phone": "(561) 691-7171", "website": "www.nexteraenergyresources.com", "contactName": "Taylor Jamison Director of Regulatory & Political Affairs", "contactEmail": "taylor.jamison@nexteraenergy.com", "contactPhone": "(561) 691-7171", "officers": [], "categories": []},
-              {"id": "59", "entityId": "", "name": "Nexus (session only)", "address": "", "city": "", "state": "MN", "zip": "", "phone": "", "website": "", "contactName": "", "contactEmail": "", "contactPhone": "", "officers": [], "categories": []},
-              {"id": "60", "entityId": "7654", "name": "Be the Match/National Marrow Donor Program", "address": "500 N 5th St", "city": "Minneapolis", "state": "MN", "zip": "55401", "phone": "(800) 670-7947", "website": "bethematch.org", "contactName": "Anne Simaytis Sr. National Advocacy Manager", "contactEmail": "asimayti@nmdp.org", "contactPhone": "414-687-0376", "officers": [], "categories": []},
-              {"id": "61", "entityId": "6980", "name": "Northside Achievement Zone", "address": "1964 N 2nd St", "city": "Minneapolis", "state": "MN", "zip": "55411", "phone": "(612) 594-8343", "website": "northsideachievement.org", "contactName": "Sondra Samuels President CEO", "contactEmail": "ssamuels@the-naz.org", "contactPhone": "(612) 594-8343", "officers": [], "categories": []},
-              {"id": "62", "entityId": "5123", "name": "PACER Center", "address": "8161 Normandale Blvd", "city": "Bloomington", "state": "MN", "zip": "55437", "phone": "(952) 838-9000", "website": "www.pacer.org", "contactName": "Laura Jean Public Policy Coordinator", "contactEmail": "Laura.Jean@pacer.org", "contactPhone": "(952) 838-9000", "officers": [], "categories": []},
-              {"id": "63", "entityId": "6773", "name": "Personal Care Products Council", "address": "555 13th Street NW", "city": "Washington", "state": "DC", "zip": "20004", "phone": "(716) 858-5922", "website": "www.personalcarecouncil.org", "contactName": "Karin Ross Executive Vice President", "contactEmail": "rossk@personalcarecouncil.org", "contactPhone": "202-297-1412", "officers": [], "categories": []},
-              {"id": "64", "entityId": "997", "name": "Parents In Community Action Inc. Head Start", "address": "4225 3rd Ave S", "city": "Minneapolis", "state": "MN", "zip": "55409", "phone": "(612) 374-8309", "website": "https://www.picaheadstart.org", "contactName": "Rico Alexander Executive Director", "contactEmail": "rico.alexander@picaheadstart.org", "contactPhone": "(612) 374-8309", "officers": [], "categories": []},
-              {"id": "65", "entityId": "7520", "name": "Pillsbury United Communities", "address": "3650 Fremont Ave N", "city": "Minneapolis", "state": "MN", "zip": "55412", "phone": "(612) 302-3400", "website": "www.pillsburyunited.org", "contactName": "Cinnamon Pelly President CEO", "contactEmail": "Cinnamon@pillsburyunited.org", "contactPhone": "614-439-2470", "officers": [], "categories": []},
-              {"id": "66", "entityId": "3395", "name": "MN Council of Nonprofits - (Press Forward)", "address": "2314 University Ave W Ste 20", "city": "St Paul", "state": "MN", "zip": "55114", "phone": "(651) 757-3060", "website": "www.minnesotanonprofits.org", "contactName": "Marie Ellis Public Policy Director", "contactEmail": "MEllis@minnesotanonprofits.org", "contactPhone": "(651) 757-3060", "officers": [], "categories": []},
-              {"id": "67", "entityId": "8112", "name": "MN Coalition of Primrose Schools", "address": "104350 City Walk Drive", "city": "Woodbury", "state": "MN", "zip": "55129", "phone": "(651) 731-5333", "website": "www.primroseschools.com", "contactName": "Tonya Holt Owner", "contactEmail": "tonyah@primrosewoodbury.com", "contactPhone": "612-743-8934", "officers": [], "categories": []},
-              {"id": "68", "entityId": "8087", "name": "Project for Pride in Living", "address": "1021 E Franklin Ave", "city": "Minneapolis", "state": "MN", "zip": "55404", "phone": "(612) 455-5203", "website": "ppl-inc.org", "contactName": "Scott Cordes COO", "contactEmail": "scott.cordes@ppl-inc.org", "contactPhone": "(612) 455-5203", "officers": [], "categories": []},
-              {"id": "69", "entityId": "8236", "name": "Propel Nonprofits", "address": "1 SE Main St Ste 600", "city": "Minneapolis", "state": "MN", "zip": "55414", "phone": "(612) 249-6673", "website": "propelnonprofits.org", "contactName": "Garrett Backes Chief Advancement Officer", "contactEmail": "gbackes@propelnonprofits.org", "contactPhone": "(612) 249-6673", "officers": [], "categories": []},
-              {"id": "70", "entityId": "4818", "name": "Rethos", "address": "415 Landmark Center 75 W 5th St", "city": "St Paul", "state": "MN", "zip": "55102", "phone": "(651) 293-9047", "website": "www.rethos.org", "contactName": "Erin Hanafin Berg Policy Director", "contactEmail": "erin@rethos.org", "contactPhone": "(651) 293-9047", "officers": [], "categories": []},
-              {"id": "71", "entityId": "8503", "name": "SitusHawk", "address": "4100 Market Street", "city": "Huntsville", "state": "AL", "zip": "35808", "phone": "(256) 864-3335", "website": "www.situshawk.com", "contactName": "Sam Barnes Chief Technology Officer", "contactEmail": "sb@situshawk.com", "contactPhone": "256-864-3340", "officers": [], "categories": []},
-              {"id": "72", "entityId": "7494", "name": "Sportradar Solutions LLC", "address": "810 7th Ave Ste 3601", "city": "New York", "state": "NY", "zip": "10019", "phone": "(929) 360-6704", "website": "www.sportradar.com", "contactName": "Daniel Lobo Guerrero Global Head Licensing & Regulatory Affairs", "contactEmail": "d.lobo@sportradar.com", "contactPhone": "(929) 360-6704", "officers": [], "categories": []},
-              {"id": "73", "entityId": "", "name": "SprayFoam Coalition", "address": "", "city": "", "state": "MN", "zip": "", "phone": "", "website": "www.sprayfoamcoalition.org", "contactName": "Stephen Wieroney President", "contactEmail": "stephen_wieroniey@sprayfoamcoation.org", "contactPhone": "301-704-5276", "officers": [], "categories": []},
-              {"id": "74", "entityId": "", "name": "Start Early Funders Coalition", "address": "", "city": "", "state": "MN", "zip": "", "phone": "", "website": "", "contactName": "Allison Corrado", "contactEmail": "carrie.johnson@gtcuw.org", "contactPhone": "612-296-5443", "officers": [], "categories": []},
-              {"id": "75", "entityId": "7881", "name": "Susan G. Komen", "address": "PO Box 801889", "city": "Dallas", "state": "TX", "zip": "75380", "phone": "(972) 701-2037", "website": "www.komen.org", "contactName": "Rebecca Birch Director State Policy & Advocacy", "contactEmail": "rbirch@komen.org", "contactPhone": "(972) 701-2037", "officers": [], "categories": []},
-              {"id": "76", "entityId": "519", "name": "MN Transportation Alliance", "address": "525 Park St Ste 240", "city": "St Paul", "state": "MN", "zip": "55103", "phone": "(651) 659-0804", "website": "http://www.transportationalliance.com", "contactName": "Margaret Donahoe Executive Director", "contactEmail": "margaret@transportationalliance.com", "contactPhone": "612-703-1074", "officers": [], "categories": []},
-              {"id": "77", "entityId": "8485", "name": "Underdog Fantasy", "address": "12587 Fair Lakes Circle", "city": "Fairfax", "state": "VA", "zip": "22033", "phone": "(202) 849-9002", "website": "https://underdogfantasy.com", "contactName": "Stacie Stern Government Affairs & Partnerships", "contactEmail": "stacie.stern@underdogfantasy.com", "contactPhone": "(202) 849-9002", "officers": [], "categories": []},
-              {"id": "78", "entityId": "2462", "name": "MN Alliance of YMCAs", "address": "1761 University Ave W", "city": "St Paul", "state": "MN", "zip": "55104", "phone": "(218) 591-2671", "website": "https://www.uppermidwestymcas.org/", "contactName": "Chris Stenberg Director of Alliance Services", "contactEmail": "chris.stenberg@ymcamn.org", "contactPhone": "(218) 591-2671", "officers": [], "categories": []},
-              {"id": "79", "entityId": "7772", "name": "YMCA of the North", "address": "651 Nicollet Ave Ste #500", "city": "Minneapolis", "state": "MN", "zip": "55402", "phone": "(612) 900-3798", "website": "www.ymcanorth.org", "contactName": "Stephanie Veatch Sr. Director of Advancement Operations", "contactEmail": "stephanie.veach@ymcamn.org", "contactPhone": "(612) 900-3798", "officers": [], "categories": []},
-              {"id": "80", "entityId": "7919", "name": "Youth Services Network", "address": "1210 Glenwood Ave", "city": "Minneapolis", "state": "MN", "zip": "55405", "phone": "(612) 871-0748", "website": "https://ysnmn.org/", "contactName": "Beth Holger CEO", "contactEmail": "bholger@thelinkmn.org", "contactPhone": "612-636-4260", "officers": [], "categories": []}
-          ];
+        // Lobbyists and organizations now live in Supabase (no client data in this public file).
         
         let cachedPdfBytes = null;
         let generatedPDFs = [];
@@ -569,22 +506,271 @@
                 .replace(/'/g, '&#039;');
         }
 
-        function getLobbyists() {
-            try { return JSON.parse(localStorage.getItem('mn_lobbyists') || '[]'); }
-            catch (e) { return []; }
+        // ===== SUPABASE DATA LAYER =====
+        // Everything still goes through getLobbyists()/saveLobbyistsData()/getOrganizations()/saveOrganizationsData(),
+        // but the data now lives in Supabase (shared by the whole firm) instead of each browser's localStorage.
+        var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        var DB = { lobbyists: [], organizations: [] };
+        var currentUser = null;
+        var LOB_MAP = [['id','id'],['regNum','reg_num'],['name','name'],['initials','initials'],['email','email'],['phone','phone'],
+            ['employer','employer'],['address1','address1'],['address2','address2'],['city','city'],['state','state'],['zip','zip'],
+            ['signaturePath','signature_path']];
+        var ORG_MAP = [['id','id'],['entityId','entity_id'],['name','name'],['address','address'],['city','city'],['state','state'],
+            ['zip','zip'],['phone','phone'],['website','website'],['contactName','contact_name'],['contactEmail','contact_email'],
+            ['contactPhone','contact_phone'],['officers','officers'],['lastSetup','last_setup'],['lastLobbyistIds','last_lobbyist_ids']];
+        var JSON_DEFAULTS = { officers: [], lastSetup: {}, lastLobbyistIds: [] };
+        var UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+        function newId() {
+            return (window.crypto && crypto.randomUUID) ? crypto.randomUUID() :
+                'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                    var r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+                });
+        }
+        function fromRow(row, map) {
+            var o = {};
+            map.forEach(function(m) {
+                var v = row[m[1]];
+                o[m[0]] = (v === null || v === undefined) ? (m[0] in JSON_DEFAULTS ? JSON.parse(JSON.stringify(JSON_DEFAULTS[m[0]])) : '') : v;
+            });
+            return o;
+        }
+        function toRow(o, map) {
+            var r = {};
+            map.forEach(function(m) {
+                var k = m[0], v = o[k];
+                if (k in JSON_DEFAULTS) {
+                    v = v || JSON.parse(JSON.stringify(JSON_DEFAULTS[k]));
+                    if (k === 'lastLobbyistIds') v = v.filter(function(x) { return UUID_RE.test(x); });
+                } else if (v === undefined || v === null || String(v).trim() === '') {
+                    v = null;
+                } else {
+                    v = String(v).trim();
+                }
+                r[m[1]] = v;
+            });
+            if (!UUID_RE.test(r.id || '')) r.id = newId();
+            return r;
         }
 
-        function saveLobbyistsData(data) {
-            localStorage.setItem('mn_lobbyists', JSON.stringify(data));
+        function setSaveState(msg, isError) {
+            var el = document.getElementById('saveState');
+            if (!el) return;
+            el.textContent = msg;
+            el.style.color = isError ? '#ffb4ad' : '';
+            if (!isError) setTimeout(function() { if (el.textContent === msg) el.textContent = ''; }, 2500);
         }
 
-        function getOrganizations() {
-            try { return JSON.parse(localStorage.getItem('mn_organizations') || '[]'); }
-            catch (e) { return []; }
+        async function reloadData() {
+            var res = await Promise.all([
+                sb.from('lobbyists').select('*').order('name'),
+                sb.from('organizations').select('*').order('name')
+            ]);
+            if (res[0].error || res[1].error) {
+                setSaveState('Could not load data: ' + (res[0].error || res[1].error).message, true);
+                return;
+            }
+            DB.lobbyists = res[0].data.map(function(r) { return fromRow(r, LOB_MAP); });
+            DB.organizations = res[1].data.map(function(r) { return fromRow(r, ORG_MAP); });
         }
 
-        function saveOrganizationsData(data) {
-            localStorage.setItem('mn_organizations', JSON.stringify(data));
+        // Write only what changed (upserts + deletes), keep the local copy in sync
+        function persist(table, key, list, map) {
+            list.forEach(function(x) { if (!UUID_RE.test(x.id || '')) x.id = newId(); });
+            var prev = DB[key];
+            DB[key] = JSON.parse(JSON.stringify(list));
+            var before = {};
+            prev.forEach(function(p) { before[p.id] = JSON.stringify(p); });
+            var changed = list.filter(function(x) { return before[x.id] !== JSON.stringify(x); });
+            var keep = {};
+            list.forEach(function(x) { keep[x.id] = true; });
+            var removed = prev.filter(function(p) { return !keep[p.id]; }).map(function(p) { return p.id; });
+            if (!changed.length && !removed.length) return Promise.resolve();
+            setSaveState('Saving…');
+            var ops = [];
+            if (changed.length) ops.push(sb.from(table).upsert(changed.map(function(x) { return toRow(x, map); })));
+            if (removed.length) ops.push(sb.from(table).delete().in('id', removed));
+            return Promise.all(ops).then(function(rs) {
+                var err = rs.map(function(r) { return r.error; }).find(Boolean);
+                if (err) throw err;
+                setSaveState('Saved');
+            }).catch(function(e) {
+                setSaveState('Save failed: ' + e.message + ' (reloaded from server)', true);
+                return reloadData().then(function() { renderLobbyists(); renderOrganizations(); });
+            });
+        }
+
+        function getLobbyists() { return JSON.parse(JSON.stringify(DB.lobbyists)); }
+        function saveLobbyistsData(data) { return persist('lobbyists', 'lobbyists', data, LOB_MAP); }
+        function getOrganizations() { return JSON.parse(JSON.stringify(DB.organizations)); }
+        function saveOrganizationsData(data) { return persist('organizations', 'organizations', data, ORG_MAP); }
+
+        // ===== AUTH (Google, @momentum-advocacy.com only) =====
+        var booted = false;
+        function showLogin(msg) {
+            document.getElementById('loginScreen').style.display = 'flex';
+            var err = document.getElementById('loginError');
+            err.textContent = msg || '';
+            err.style.display = msg ? 'block' : 'none';
+            document.getElementById('googleBtn').disabled = false;
+        }
+        function signInWithGoogle() {
+            document.getElementById('googleBtn').disabled = true;
+            sb.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: location.origin + location.pathname,
+                    queryParams: { hd: 'momentum-advocacy.com', prompt: 'select_account' }
+                }
+            }).then(function(r) { if (r.error) showLogin(r.error.message); });
+        }
+        async function signOut() {
+            await sb.auth.signOut();
+            booted = false; DB.lobbyists = []; DB.organizations = [];
+            location.reload();
+        }
+        async function boot(session) {
+            if (booted) return;
+            var email = (session.user && session.user.email) || '';
+            if (!/@momentum-advocacy\.com$/i.test(email)) {
+                await sb.auth.signOut();
+                showLogin('Sign in with your @momentum-advocacy.com Google account.');
+                return;
+            }
+            booted = true;
+            currentUser = { email: email };
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('whoami').textContent = email;
+            await reloadData();
+            renderLobbyists();
+            renderOrganizations();
+            renderQuickPick();
+            loadQueue();
+        }
+        async function startAuth() {
+            sb.auth.onAuthStateChange(function(evt, session) {
+                if (session && (evt === 'SIGNED_IN' || evt === 'INITIAL_SESSION')) boot(session);
+            });
+            var r = await sb.auth.getSession();
+            if (r.data && r.data.session) boot(r.data.session); else showLogin();
+        }
+
+        // ===== TO FILE (gap view + filing status) =====
+        var QUEUE = { gaps: [], filings: [] , mineOnly: false };
+        async function loadQueue() {
+            var box = document.getElementById('queueList');
+            if (!box) return;
+            box.innerHTML = '<div class="empty">Loading what needs filing…</div>';
+            var res = await Promise.all([
+                sb.from('registration_gaps').select('*'),
+                sb.from('filings').select('*')
+            ]);
+            if (res[0].error || res[1].error) {
+                box.innerHTML = '<div class="status error">Could not load: ' + escapeHtml((res[0].error || res[1].error).message) + '</div>';
+                return;
+            }
+            QUEUE.gaps = res[0].data || [];
+            QUEUE.filings = res[1].data || [];
+            renderQueue();
+        }
+        function filingFor(g) {
+            var order = { skip: 3, filed: 2, generated: 1 };
+            return QUEUE.filings.filter(function(f) {
+                return f.lobbyist_id === g.lobbyist_id && f.org_id === g.org_id && f.action === g.action && f.status !== 'confirmed';
+            }).sort(function(a, b) { return (order[b.status] || 0) - (order[a.status] || 0); })[0];
+        }
+        function myLobbyistId() {
+            var me = DB.lobbyists.find(function(l) { return currentUser && (l.email || '').toLowerCase() === currentUser.email.toLowerCase(); });
+            return me ? me.id : null;
+        }
+        function renderQueue() {
+            var box = document.getElementById('queueList');
+            var lobById = {}, orgById = {};
+            DB.lobbyists.forEach(function(l) { lobById[l.id] = l; });
+            DB.organizations.forEach(function(o) { orgById[o.id] = o; });
+            var mine = myLobbyistId();
+            var gaps = QUEUE.gaps.filter(function(g) { return !QUEUE.mineOnly || g.lobbyist_id === mine; });
+            var counts = { registration: 0, termination: 0 };
+            var groups = {};
+            gaps.forEach(function(g) {
+                var f = filingFor(g);
+                if (f && f.status === 'skip' && !QUEUE.showSkipped) return;
+                if (!f || f.status === 'generated') counts[g.action]++;
+                var k = g.action + '|' + g.org_id;
+                (groups[k] = groups[k] || { action: g.action, org: orgById[g.org_id] || { name: '?' }, orgId: g.org_id, rows: [] }).rows.push({ g: g, f: f });
+            });
+            document.getElementById('queueCount').textContent = counts.registration + counts.termination;
+            document.getElementById('tofileBadge').textContent = counts.registration + counts.termination || '';
+            var html = '';
+            [['registration', 'Registrations needed', 'Staffed on the roster but not registered with the CFB.'],
+             ['termination', 'Terminations to review', 'Registered with the CFB, but nobody on the roster is staffed on this client. Confirm it ended before filing.']].forEach(function(sec) {
+                var gs = Object.keys(groups).map(function(k) { return groups[k]; }).filter(function(x) { return x.action === sec[0]; })
+                    .sort(function(a, b) { return (a.org.name || '').localeCompare(b.org.name || ''); });
+                html += '<h3>' + sec[1] + ' <span class="count">' + counts[sec[0]] + ' to do</span></h3><p class="lede" style="margin-top:-6px;">' + sec[2] + '</p>';
+                if (!gs.length) { html += '<div class="empty">Nothing here 🎉</div>'; return; }
+                gs.forEach(function(grp) {
+                    var todo = grp.rows.filter(function(r) { return !r.f || r.f.status === 'generated'; });
+                    html += '<div class="list-item" style="align-items:flex-start;"><div style="flex:1;min-width:0;">';
+                    html += '<h4>' + escapeHtml(grp.org.name) + (grp.org.entityId ? ' <small>#' + escapeHtml(grp.org.entityId) + '</small>' : '') + '</h4>';
+                    html += '<div class="queue-people">';
+                    grp.rows.sort(function(a, b) { return ((lobById[a.g.lobbyist_id] || {}).name || '').localeCompare((lobById[b.g.lobbyist_id] || {}).name || ''); })
+                    .forEach(function(r) {
+                        var l = lobById[r.g.lobbyist_id] || { name: '?' };
+                        var st = r.f ? r.f.status : 'todo';
+                        var key = escapeHtml(r.g.lobbyist_id + '|' + r.g.org_id + '|' + r.g.action);
+                        html += '<span class="qp qp-' + st + '">' + escapeHtml(shortName(l.name));
+                        if (st === 'todo') html += ' <button type="button" data-q-mark="filed" data-q-key="' + key + '" title="I filed this">Mark filed</button><button type="button" class="qx" data-q-mark="skip" data-q-key="' + key + '" title="Not needed">Skip</button>';
+                        else if (st === 'generated') html += ' · PDF made <button type="button" data-q-mark="filed" data-q-key="' + key + '">Mark filed</button>';
+                        else if (st === 'filed') html += ' · filed, waiting on CFB <button type="button" class="qx" data-q-undo="' + escapeHtml(r.f.id) + '">Undo</button>';
+                        else if (st === 'skip') html += ' · skipped <button type="button" class="qx" data-q-undo="' + escapeHtml(r.f.id) + '">Undo</button>';
+                        html += '</span>';
+                    });
+                    html += '</div></div>';
+                    if (todo.length) html += '<div><button type="button" data-q-open="' + escapeHtml(grp.action + '|' + grp.orgId) + '">Open form' + (todo.length > 1 ? 's (' + todo.length + ')' : '') + '</button></div>';
+                    html += '</div>';
+                });
+            });
+            box.innerHTML = html;
+        }
+        async function markFiling(key, status) {
+            var p = key.split('|');
+            var row = { lobbyist_id: p[0], org_id: p[1], action: p[2], status: status };
+            if (status === 'filed') row.filed_at = new Date().toISOString();
+            // clear any earlier 'generated' marker so there's one current status
+            await sb.from('filings').delete().match({ lobbyist_id: p[0], org_id: p[1], action: p[2], status: 'generated' });
+            var r = await sb.from('filings').upsert(row, { onConflict: 'lobbyist_id,org_id,action,status' });
+            if (r.error) { setSaveState('Could not update: ' + r.error.message, true); return; }
+            setSaveState(status === 'filed' ? 'Marked filed' : 'Skipped');
+            loadQueue();
+        }
+        async function undoFiling(id) {
+            var r = await sb.from('filings').delete().eq('id', id);
+            if (r.error) { setSaveState('Could not undo: ' + r.error.message, true); return; }
+            loadQueue();
+        }
+        function openFromQueue(key) {
+            var p = key.split('|'), action = p[0], orgId = p[1];
+            var ids = QUEUE.gaps.filter(function(g) {
+                var f = filingFor(g);
+                return g.action === action && g.org_id === orgId && (!f || f.status === 'generated');
+            }).map(function(g) { return g.lobbyist_id; });
+            showTab('generate');
+            setMode(action === 'termination' ? 'termination' : 'new');
+            selectOrganization(orgId);
+            selectedLobbyistIds = ids;
+            rerenderSelected();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        // After PDFs are generated, note it on any matching queue items
+        async function recordGenerated(orgId, lobbyistIds, mode) {
+            var action = mode === 'termination' ? 'termination' : (mode === 'new' ? 'registration' : null);
+            if (!action) return;
+            var rows = QUEUE.gaps.filter(function(g) {
+                return g.org_id === orgId && g.action === action && lobbyistIds.indexOf(g.lobbyist_id) >= 0 && !filingFor(g);
+            }).map(function(g) { return { lobbyist_id: g.lobbyist_id, org_id: g.org_id, action: action, status: 'generated' }; });
+            if (!rows.length) return;
+            await sb.from('filings').upsert(rows, { onConflict: 'lobbyist_id,org_id,action,status' });
+            loadQueue();
         }
 
         // ===== TABS =====
@@ -611,7 +797,7 @@
         function saveLobbyist(e) {
             e.preventDefault();
             var lobbyist = {
-                id: document.getElementById('lobbyistId').value || Date.now().toString(),
+                id: document.getElementById('lobbyistId').value || newId(),
                 regNum: sanitize(document.getElementById('lobbyistRegNum').value),
                 name: sanitize(document.getElementById('lobbyistName').value),
                 email: sanitize(document.getElementById('lobbyistEmail').value),
@@ -742,7 +928,7 @@
         function saveOrganization(e) {
             e.preventDefault();
             var org = {
-                id: document.getElementById('orgId').value || Date.now().toString(),
+                id: document.getElementById('orgId').value || newId(),
                 entityId: sanitize(document.getElementById('orgEntityId').value),
                 name: sanitize(document.getElementById('orgName').value),
                 address: sanitize(document.getElementById('orgAddress').value),
@@ -1473,6 +1659,7 @@
                 }
 
                 rememberSetupForOrg(org, selected);
+                recordGenerated(org.id, selected.map(function(x) { return x.id; }), mode);
                 lastBatchName = sanitize(org.name).replace(/[^a-z0-9]+/gi, '_').substring(0, 30) + '_' +
                     (isTermination ? 'Terminations' : (isNew ? 'Registrations' : 'Amendments')) + '_' + new Date().toISOString().slice(0, 10);
                 statusDiv.innerHTML = '<div class="status success">Generated ' + generatedPDFs.length + ' PDF' + (generatedPDFs.length === 1 ? '' : 's') +
@@ -2098,9 +2285,10 @@
                 for (var i = 0; i < existingLobbyists.length; i++) {
                     if (existingLobbyists[i].regNum) existingRegNums[existingLobbyists[i].regNum] = true;
                 }
-                var existingOrgNames = {};
+                var existingOrgNames = {}, existingEntityIds = {};
                 for (var i = 0; i < existingOrgs.length; i++) {
                     existingOrgNames[(existingOrgs[i].name || '').toLowerCase()] = true;
+                    if (existingOrgs[i].entityId) existingEntityIds[String(existingOrgs[i].entityId)] = true;
                 }
 
                 var newLobbyists = 0, newOrgs = 0;
@@ -2109,6 +2297,8 @@
                 for (var i = 1; i < lines.length; i++) {
                     var fields = parseCSV(lines[i]);
                     if (fields.length < 15) continue;
+                    // Only Momentum people: already in our list, or employer says Momentum
+                    if (!existingRegNums[fields[0]] && !/momentum/i.test(fields[8] || '')) continue;
 
                     var regNum = fields[0];
                     var name = fields[1];
@@ -2124,7 +2314,7 @@
 
                     if (regNum && !existingRegNums[regNum]) {
                         existingLobbyists.push({
-                            id: Date.now().toString() + Math.random().toString(36).substr(2),
+                            id: newId(),
                             regNum: sanitize(regNum),
                             name: sanitize(formattedName || name),
                             email: sanitize(email),
@@ -2146,9 +2336,10 @@
                     while ((match = regex.exec(associations || '')) !== null) {
                         var orgName = sanitize(match[2].trim());
                         var lower = orgName.toLowerCase();
-                        if (orgName && !existingOrgNames[lower] && !orgMap[lower]) {
+                        if (orgName && !existingOrgNames[lower] && !orgMap[lower] && !existingEntityIds[match[1]]) {
+                            existingEntityIds[match[1]] = true;
                             orgMap[lower] = {
-                                id: Date.now().toString() + Math.random().toString(36).substr(2),
+                                id: newId(),
                                 entityId: match[1],
                                 name: orgName,
                                 address: '', city: '', state: 'MN', zip: '', phone: '', website: '',
@@ -2227,6 +2418,9 @@
 
             if (target.hasAttribute('data-preview-pdf')) previewPDF(parseInt(target.getAttribute('data-preview-pdf')));
             if (target.hasAttribute('data-download-zip')) downloadZip();
+            if (target.hasAttribute('data-q-mark')) markFiling(target.getAttribute('data-q-key'), target.getAttribute('data-q-mark'));
+            if (target.hasAttribute('data-q-undo')) undoFiling(target.getAttribute('data-q-undo'));
+            if (target.hasAttribute('data-q-open')) openFromQueue(target.getAttribute('data-q-open'));
             if (target.hasAttribute('data-copy-cats')) copyCategoriesToAll(target.getAttribute('data-copy-cats'));
             if (target.hasAttribute('data-close-editor')) closeEditor(target.getAttribute('data-close-editor'));
             if (target.hasAttribute('data-pick-lobbyist')) {
@@ -2342,54 +2536,23 @@
             }
         });
 
-        // ===== LOGIN =====
-        function handleLogin(e) {
-            e.preventDefault();
-            var username = document.getElementById('loginUsername').value;
-            var password = document.getElementById('loginPassword').value;
-
-            if (username === VALID_USERNAME && password === VALID_PASSWORD) {
-                document.getElementById('loginScreen').style.display = 'none';
-                sessionStorage.setItem('mn_lobbyist_logged_in', 'true');
-            } else {
-                document.getElementById('loginError').style.display = 'block';
-            }
-        }
-
-        function checkLogin() {
-            if (sessionStorage.getItem('mn_lobbyist_logged_in') === 'true') {
-                document.getElementById('loginScreen').style.display = 'none';
-            }
-        }
-
         // ===== INIT =====
-        // Initialize default data if localStorage is empty
-        function initDefaults() {
-              var existingLobbyists = localStorage.getItem('mn_lobbyists');
-              if (!existingLobbyists || existingLobbyists === '[]') {
-                  localStorage.setItem('mn_lobbyists', JSON.stringify(DEFAULT_LOBBYISTS));
-              }
-              var existingOrganizations = localStorage.getItem('mn_organizations');
-              if (!existingOrganizations || existingOrganizations === '[]') {
-                  localStorage.setItem('mn_organizations', JSON.stringify(DEFAULT_ORGANIZATIONS));
-              }
-          }
-
         document.addEventListener('DOMContentLoaded', function() {
-            // Check if already logged in
-            checkLogin();
-            // Load defaults if needed                                                                                                                                                   
-            initDefaults();                                                                                                                                                                                             
-
-            // Login form handler
-            document.getElementById('loginForm').addEventListener('submit', handleLogin);
+            document.getElementById('googleBtn').addEventListener('click', signInWithGoogle);
+            document.getElementById('signOutBtn').addEventListener('click', signOut);
+            document.getElementById('refreshQueueBtn').addEventListener('click', loadQueue);
+            document.getElementById('mineOnlyBtn').addEventListener('click', function(e) {
+                QUEUE.mineOnly = !QUEUE.mineOnly;
+                e.target.classList.toggle('on', QUEUE.mineOnly);
+                renderQueue();
+            });
+            startAuth();
 
             // Form type switch (New / Amendment / Termination)
             document.querySelectorAll('#modeSwitch [data-mode]').forEach(function(btn) {
                 btn.addEventListener('click', function() { setMode(btn.getAttribute('data-mode')); });
             });
             setMode('new');
-            fixKnownDataErrors();
 
             renderLobbyists();
             renderOrganizations();
