@@ -3,142 +3,223 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MN Lobbyist Registration Form Filler</title>
+    <title>Lobbyist Registration · Momentum Advocacy</title>
     <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; }
-        .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
-        header { background: #003366; color: white; padding: 20px; margin-bottom: 20px; }
-        header h1 { font-size: 1.5em; }
+        /* ===== Momentum Advocacy theme (matches motrack26.com) ===== */
+        :root{
+            color-scheme: light;
+            --navy:#00325d; --navy-2:#0a4275; --gold:#eeb310; --gold-soft:#fbefc6;
+            --cream:#f7f2e7; --cream-2:#efe8d8; --paper:#fffdf8;
+            --ink:#0d2440; --muted:#6c7584; --line:#e6dccb; --soft:#efe8d8;
+            --ok:#2e7d4f; --ok-soft:#e3f1e8; --bad:#b3362f; --bad-soft:#f8e3e1; --info-soft:#e4ecf5;
+        }
+        *{box-sizing:border-box;margin:0;padding:0}
+        body{background:var(--cream);color:var(--ink);font:14px/1.45 "Montserrat",system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh;display:flex;flex-direction:column}
+        .container{max-width:1100px;margin:0 auto;padding:0 16px;width:100%}
+        main.container{padding-top:28px;padding-bottom:56px;flex:1}
 
-        .sync-bar { background: #e8f4f8; border: 1px solid #b8d4e3; padding: 12px 20px; border-radius: 6px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
-        .sync-bar button { background: #0088cc; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; }
-        .sync-bar button:hover { background: #006699; }
-        #syncStatus { font-size: 0.9em; color: #666; }
+        /* brand bar */
+        .brandbar{background:var(--cream);border-bottom:1px solid var(--line)}
+        .top{display:flex;flex-wrap:wrap;gap:14px 24px;align-items:center;justify-content:space-between;padding:16px 0}
+        .brand{display:flex;align-items:center;gap:18px;min-width:0}
+        .brand img{height:42px;width:auto;display:block}
+        .wordmark{font-weight:800;color:var(--navy);font-size:17px;line-height:1;letter-spacing:-.01em}
+        .brand .divider{width:1px;height:38px;background:var(--line)}
+        header h1{font-size:20px;font-weight:800;margin:0;letter-spacing:-.02em;color:var(--navy);line-height:1.15}
+        header h1 small{display:block;font-size:11.5px;font-weight:600;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;margin-top:3px}
 
-        .tabs { display: flex; gap: 5px; margin-bottom: 0; }
-        .tab { padding: 12px 24px; background: #ddd; border: none; cursor: pointer; border-radius: 6px 6px 0 0; }
-        .tab.active { background: #003366; color: white; }
-        .tab-content { display: none; background: white; padding: 25px; border-radius: 0 6px 6px 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        .tab-content.active { display: block; }
+        /* navy band + nav */
+        .band{background:var(--navy);color:var(--cream);position:sticky;top:0;z-index:50;box-shadow:0 2px 0 var(--gold)}
+        .sync-bar{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;justify-content:space-between;padding:12px 0 4px;font-size:12.5px;font-weight:500;color:#c9d3e0}
+        .sync-bar > div{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+        #syncStatus{color:#c9d3e0}
+        #syncStatus .status{display:inline;padding:0;background:none;color:var(--gold);margin:0}
+        .sync-bar button{margin:0}
+        .tabs{display:flex;gap:6px;overflow-x:auto}
+        .tab{border:none;background:none;border-radius:0;padding:10px 4px;margin:0 18px 0 0;color:#a9b7c9;font:inherit;font-weight:700;font-size:13.5px;white-space:nowrap;border-bottom:3px solid transparent;cursor:pointer}
+        .tab:hover{color:var(--cream);background:none;box-shadow:none}
+        .tab.active{color:var(--cream);border-bottom-color:var(--gold);background:none}
 
-        h2 { color: #003366; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
-        h3 { margin: 20px 0 10px; color: #444; }
+        /* panels */
+        .tab-content{display:none;background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:24px 26px;box-shadow:0 1px 2px rgba(0,50,93,.04)}
+        .tab-content.active{display:block}
+        h2{display:flex;align-items:center;gap:10px;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--navy);margin:0 0 18px}
+        h2::before{content:"";width:18px;height:4px;border-radius:2px;background:var(--gold)}
+        h3{font-size:15px;font-weight:800;color:var(--navy);letter-spacing:-.01em;margin:26px 0 12px;padding-top:18px;border-top:1px solid var(--soft)}
+        h4{font-weight:700;color:var(--navy)}
+        .lede{color:var(--muted);font-size:13px;margin:-8px 0 18px}
 
-        .form-row { display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; }
-        .form-group { flex: 1; min-width: 200px; }
-        .form-group.full { flex-basis: 100%; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.9em; color: #555; }
-        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 1em; }
+        /* forms */
+        .form-row{display:flex;gap:14px;margin-bottom:14px;flex-wrap:wrap}
+        .form-group{flex:1;min-width:200px}
+        .form-group.full{flex-basis:100%}
+        .form-group label,.field-label{display:block;margin-bottom:6px;font-weight:700;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+        input[type=text],input[type=email],input[type=tel],input[type=date],input[type=password],select,textarea{width:100%;font:inherit;font-size:14px;font-weight:500;color:var(--ink);background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px;transition:border-color .15s}
+        input:hover,select:hover,textarea:hover{border-color:#cdbfa6}
+        input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible{outline:2px solid var(--gold);outline-offset:1px;border-color:var(--navy)}
+        select{appearance:none;padding-right:32px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%2300325d' stroke-width='1.6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
+        input[type=checkbox],input[type=radio]{accent-color:var(--navy);width:16px;height:16px}
+        small{color:var(--muted)}
 
-        button { padding: 10px 20px; background: #003366; color: white; border: none; border-radius: 4px; cursor: pointer; margin-right: 10px; margin-top: 10px; }
-        button:hover { background: #004488; }
-        button.secondary { background: #666; }
-        button.danger { background: #c0392b; }
-        button.success { background: #27ae60; }
+        /* buttons: pills. default = primary navy */
+        button{font:inherit;font-weight:700;font-size:13px;cursor:pointer;border-radius:999px;padding:9px 18px;margin:10px 8px 0 0;border:1px solid var(--navy);background:var(--navy);color:var(--cream);transition:background .15s,box-shadow .15s,border-color .15s}
+        button:hover{background:var(--navy-2);box-shadow:inset 0 -3px 0 var(--gold)}
+        button:disabled{opacity:.5;cursor:default}
+        button.secondary{background:var(--paper);color:var(--navy);border-color:var(--line)}
+        button.secondary:hover{border-color:var(--navy);box-shadow:none;background:var(--paper)}
+        button.danger{background:var(--paper);color:var(--bad);border-color:#e7c3bf}
+        button.danger:hover{background:var(--bad-soft);border-color:var(--bad);box-shadow:none}
+        button.success{background:var(--navy);color:var(--cream)}
+        button.gold,.sync-bar button{background:var(--gold);border-color:var(--gold);color:var(--navy)}
+        button.gold:hover,.sync-bar button:hover{background:#ffc52a;box-shadow:none}
+        button.big{padding:14px 30px;font-size:14.5px}
 
-        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; background: #f9f9f9; border: 1px solid #eee; border-radius: 4px; margin-bottom: 8px; }
-        .list-item h4 { margin: 0 0 4px; }
-        .list-item p { margin: 0; font-size: 0.85em; color: #666; }
-        .list-item button { margin: 0 0 0 8px; padding: 6px 12px; font-size: 0.85em; }
+        /* lists */
+        .list-item{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 16px;background:#fff;border:1px solid var(--line);border-radius:12px;margin-bottom:8px;transition:box-shadow .2s}
+        .list-item:hover{box-shadow:0 4px 14px rgba(0,50,93,.08)}
+        .list-item h4{margin:0 0 3px;font-size:14.5px;display:flex;align-items:center;flex-wrap:wrap;gap:6px}
+        .list-item p{margin:0;font-size:12.5px;color:var(--muted)}
+        .list-item > div:last-child{white-space:nowrap}
+        .list-item button{margin:0 0 0 6px;padding:6px 13px;font-size:12px}
+        .reg-badge{background:var(--navy);color:var(--cream);padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;font-variant-numeric:tabular-nums}
+        .cfb-badge{background:var(--gold-soft);color:var(--navy);padding:2px 8px;border-radius:999px;font-size:10.5px;font-weight:800;letter-spacing:.04em}
+        .empty{text-align:center;padding:30px;color:var(--muted);font-weight:500}
+        .search-box{margin-bottom:16px}
 
-        .reg-badge { background: #003366; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.75em; margin-right: 8px; }
-        .cfb-badge { background: #0088cc; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.7em; margin-left: 5px; }
+        /* category table */
+        .category-table{width:100%;border-collapse:separate;border-spacing:0;margin:14px 0;font-size:13px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff}
+        .category-table th{background:var(--navy);color:var(--cream);padding:9px 8px;text-align:center;font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+        .category-table th:first-child{text-align:left;padding-left:14px}
+        .category-table td{padding:7px 8px;border-top:1px solid var(--soft)}
+        .category-table td:first-child{padding-left:14px;font-weight:500}
+        .category-table td:not(:first-child){text-align:center}
+        .category-table tr:hover td{background:var(--gold-soft)}
 
-        .empty { text-align: center; padding: 30px; color: #888; }
-        .search-box { margin-bottom: 15px; }
-        .search-box input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
+        /* search dropdowns */
+        .search-dropdown{position:relative}
+        .search-dropdown-list{position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:1px solid var(--line);border-radius:12px;max-height:240px;overflow-y:auto;z-index:100;display:none;box-shadow:0 10px 24px rgba(0,50,93,.12)}
+        .search-dropdown-list.visible{display:block}
+        .search-dropdown-item{padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--soft)}
+        .search-dropdown-item:hover{background:var(--gold-soft)}
+        .search-dropdown-item:last-child{border-bottom:none}
+        .selected-item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 10px 9px 14px;background:var(--gold-soft);border:1px solid #f1d98a;border-radius:999px;margin-top:8px;font-weight:600;color:var(--navy)}
+        .selected-item button{margin:0;padding:4px 12px;font-size:12px;background:var(--paper);color:var(--bad);border-color:#e7c3bf}
 
-        .category-table { width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 0.9em; }
-        .category-table th { background: #003366; color: white; padding: 8px; text-align: center; font-size: 0.8em; }
-        .category-table th:first-child { text-align: left; }
-        .category-table td { padding: 6px 8px; border-bottom: 1px solid #eee; }
-        .category-table td:not(:first-child) { text-align: center; }
-        .category-table tr:hover { background: #f5f5f5; }
-        .category-table input[type="checkbox"] { width: 16px; height: 16px; }
+        /* selected lobbyists on generate tab */
+        .select-list{border:1px dashed var(--line);border-radius:14px;padding:12px;background:var(--cream)}
+        .select-item{padding:16px;background:#fff;border:1px solid var(--line);border-radius:12px;margin-bottom:10px}
+        .select-item:last-child{margin-bottom:0}
+        .select-item-header{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+        .select-item-header strong{color:var(--navy)}
+        .select-item-header input[type=checkbox]{width:18px;height:18px;flex-shrink:0}
+        .select-item-header button{margin:0}
+        .select-item-options{margin-left:30px;display:none}
+        .select-item-options.visible{display:block}
+        .reporting-section{margin-bottom:10px;padding:12px 14px;background:var(--cream);border-radius:10px;border:1px solid var(--soft)}
+        .reporting-section > label{display:block;margin-bottom:6px;font-weight:700;color:var(--navy);font-size:13px}
+        .reporting-section select{max-width:420px}
+        .reporting-section .help-text{font-size:12px;color:var(--muted);margin-top:6px}
+        .check-line{display:flex;align-items:flex-start;gap:8px;font-weight:500 !important;color:var(--ink) !important;font-size:13px !important;margin:6px 0 !important;cursor:pointer}
+        .check-line input{margin-top:2px;flex-shrink:0}
 
-        .search-dropdown { position: relative; }
-        .search-dropdown input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 1em; }
-        .search-dropdown-list { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #ddd; border-top: none; border-radius: 0 0 4px 4px; max-height: 200px; overflow-y: auto; z-index: 100; display: none; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        .search-dropdown-list.visible { display: block; }
-        .search-dropdown-item { padding: 10px 12px; cursor: pointer; border-bottom: 1px solid #eee; }
-        .search-dropdown-item:hover { background: #f0f7ff; }
-        .search-dropdown-item:last-child { border-bottom: none; }
-        .search-dropdown-item small { color: #666; }
-        .selected-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: #e8f4f8; border: 1px solid #b8d4e3; border-radius: 4px; margin-top: 8px; }
-        .selected-item button { background: #c0392b; padding: 4px 10px; margin: 0; font-size: 0.85em; }
+        /* mode switch (registration / amendment / termination) */
+        .modes{display:inline-flex;background:var(--cream);border:1px solid var(--line);border-radius:999px;padding:4px;gap:4px;flex-wrap:wrap}
+        .modes button{margin:0;padding:8px 16px;background:none;border:none;color:var(--navy);box-shadow:none}
+        .modes button:hover{background:var(--paper);box-shadow:none}
+        .modes button.on{background:var(--navy);color:var(--cream)}
+        .modes button.on.term{background:var(--bad);color:#fff}
+        .term-note{display:none;background:var(--bad-soft);border:1px solid #e7c3bf;border-left:4px solid var(--bad);border-radius:12px;padding:12px 16px;margin:4px 0 18px;font-size:13px}
+        .term-note b{color:var(--bad)}
+        body.mode-termination .term-note{display:block}
+        body.mode-termination .reg-only{display:none !important}
+        body:not(.mode-termination) .term-only{display:none !important}
 
-        .select-list { max-height: 600px; overflow-y: auto; border: 1px solid #ddd; border-radius: 4px; padding: 10px; background: #fafafa; }
-        .select-item { padding: 15px; background: white; border: 1px solid #eee; border-radius: 4px; margin-bottom: 10px; }
-        .select-item-header { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
-        .select-item-header input[type="checkbox"] { width: 20px; height: 20px; flex-shrink: 0; }
-        .select-item-options { margin-left: 32px; padding: 15px; background: #f5f5f5; border-radius: 4px; display: none; }
-        .select-item-options.visible { display: block; }
+        /* status + generated */
+        .status{padding:12px 16px;border-radius:12px;margin-bottom:16px;font-weight:600;font-size:13px}
+        .status.success{background:var(--ok-soft);color:var(--ok)}
+        .status.error{background:var(--bad-soft);color:var(--bad)}
+        .status.info{background:var(--info-soft);color:var(--navy)}
+        .generated-forms{margin-top:20px}
+        .generated-form-item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px 10px 16px;background:var(--ok-soft);border:1px solid #c3dfcc;border-radius:12px;margin-bottom:8px;font-weight:500}
+        .generated-form-item button{margin:0;padding:6px 14px;font-size:12px}
+        .officer-row{display:flex;gap:10px;margin-bottom:8px;align-items:end}
+        .officer-row input{flex:1}
+        .officer-row button{margin:0;padding:8px 12px}
+        .help-box{background:var(--info-soft);border:1px solid #cbd8e8;padding:12px 16px;border-radius:12px;margin-bottom:16px;font-size:13px}
+        .help-box.warn{background:var(--gold-soft);border-color:#f1d98a}
+        .help-box button{float:right;margin:0;padding:3px 10px;font-size:11px}
 
-        .reporting-section { margin-bottom: 15px; padding: 10px; background: white; border-radius: 4px; border: 1px solid #ddd; }
-        .reporting-section label { display: block; margin-bottom: 8px; font-weight: 600; }
-        .reporting-section select { width: 100%; max-width: 400px; padding: 8px; margin-top: 5px; }
-        .reporting-section .help-text { font-size: 0.85em; color: #666; margin-top: 5px; }
+        /* login */
+        #loginScreen{position:fixed;inset:0;background:var(--navy);display:flex;align-items:center;justify-content:center;z-index:1000;border-top:4px solid var(--gold)}
+        .login-card{background:var(--paper);padding:36px 34px 30px;border-radius:16px;box-shadow:0 20px 50px rgba(0,0,0,.3);max-width:400px;width:90%;border-top:4px solid var(--gold)}
+        .login-card img{height:44px;display:block;margin:0 auto 18px}
+        .login-card h1{color:var(--navy);font-size:18px;font-weight:800;text-align:center;letter-spacing:-.01em}
+        .login-card p{color:var(--muted);text-align:center;margin:4px 0 24px;font-size:13px}
+        .login-card .form-group{margin-bottom:14px}
+        .login-card button{width:100%;margin:6px 0 0;padding:12px}
+        #loginError{color:var(--bad);margin-bottom:12px;display:none;font-weight:600;font-size:13px;text-align:center}
 
-        .status { padding: 12px; border-radius: 4px; margin-bottom: 15px; }
-        .status.success { background: #d4edda; color: #155724; }
-        .status.error { background: #f8d7da; color: #721c24; }
-        .status.info { background: #cce5ff; color: #004085; }
+        footer{background:var(--navy);color:#c9d3e0;font-size:12px;border-top:3px solid var(--gold)}
+        footer .container{padding-top:20px;padding-bottom:26px;display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-between}
+        footer b{color:var(--cream)}
+        footer a{color:var(--gold)}
 
-        .generated-forms { margin-top: 20px; }
-        .generated-form-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 15px; background: #d4edda; border: 1px solid #c3e6cb; border-radius: 4px; margin-bottom: 8px; }
-        .generated-form-item button { background: #28a745; margin: 0; }
-        .generated-form-item button:hover { background: #218838; }
-
-        .officer-row { display: flex; gap: 10px; margin-bottom: 8px; align-items: end; }
-        .officer-row input { flex: 1; }
-        .officer-row button { margin: 0; padding: 8px 12px; }
+        @media (max-width:600px){
+            .band{position:static}.brand img{height:34px}.brand .divider{display:none}.brand{flex-wrap:wrap;gap:10px}
+            .tab-content{padding:18px 16px}.select-item-options{margin-left:0}.list-item{flex-direction:column;align-items:flex-start}
+        }
     </style>
 </head>
 <body>
     <!-- Login Screen -->
-    <div id="loginScreen" style="position:fixed;top:0;left:0;right:0;bottom:0;background:#003366;display:flex;align-items:center;justify-content:center;z-index:1000;">
-        <div style="background:white;padding:40px;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,0.3);text-align:center;max-width:400px;width:90%;">
-            <h1 style="color:#003366;margin-bottom:10px;font-size:1.5em;">Minnesota Lobbyist Registration</h1>
-            <p style="color:#666;margin-bottom:30px;">Please log in to continue</p>
+    <div id="loginScreen">
+        <div class="login-card">
+            <img src="momentum-logo.png" alt="Momentum Advocacy" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'wordmark',textContent:'momentum advocacy',style:'text-align:center;margin-bottom:16px'}))">
+            <h1>Lobbyist Registration</h1>
+            <p>Minnesota CFB forms · please log in</p>
             <form id="loginForm">
-                <div style="margin-bottom:15px;text-align:left;">
-                    <label style="display:block;margin-bottom:5px;font-weight:600;color:#555;">Username</label>
-                    <input type="text" id="loginUsername" style="width:100%;padding:12px;border:1px solid #ddd;border-radius:4px;font-size:1em;" required>
-                </div>
-                <div style="margin-bottom:20px;text-align:left;">
-                    <label style="display:block;margin-bottom:5px;font-weight:600;color:#555;">Password</label>
-                    <input type="password" id="loginPassword" style="width:100%;padding:12px;border:1px solid #ddd;border-radius:4px;font-size:1em;" required>
-                </div>
-                <div id="loginError" style="color:#c0392b;margin-bottom:15px;display:none;">Invalid username or password</div>
-                <button type="submit" style="width:100%;padding:12px;background:#003366;color:white;border:none;border-radius:4px;font-size:1em;cursor:pointer;">Log In</button>
+                <div class="form-group"><label>Username</label><input type="text" id="loginUsername" required></div>
+                <div class="form-group"><label>Password</label><input type="password" id="loginPassword" required></div>
+                <div id="loginError">Invalid username or password</div>
+                <button type="submit">Log In</button>
             </form>
         </div>
     </div>
 
     <header>
-        <div class="container">
-            <h1>Minnesota Lobbyist Registration Form Filler</h1>
+        <div class="brandbar">
+            <div class="container top">
+                <div class="brand">
+                    <img src="momentum-logo.png" alt="Momentum Advocacy" onerror="this.replaceWith(Object.assign(document.createElement('b'),{className:'wordmark',textContent:'momentum advocacy'}))">
+                    <span class="divider" aria-hidden="true"></span>
+                    <h1>Lobbyist Registration<small>Minnesota CFB · registrations, amendments &amp; terminations</small></h1>
+                </div>
+            </div>
+        </div>
+
+        <div class="band">
+            <div class="container">
+                <div class="sync-bar">
+                    <div>
+                        <button id="syncBtn">Sync from CFB</button>
+                        <span id="syncStatus"></span>
+                    </div>
+                    <div>Forms follow the official CFB layout</div>
+                </div>
+                <nav class="tabs">
+                    <button class="tab active" data-tab="lobbyists">Lobbyists</button>
+                    <button class="tab" data-tab="organizations">Organizations</button>
+                    <button class="tab" data-tab="generate">Generate Forms</button>
+                </nav>
+            </div>
         </div>
     </header>
 
-    <div class="container">
-        <div class="sync-bar">
-            <div>
-                <button id="syncBtn">Sync from CFB</button>
-                <span id="syncStatus"></span>
-            </div>
-            <div style="font-size: 0.85em; color: #666;">
-                Forms will match the official CFB registration form exactly
-            </div>
-        </div>
-
-        <div class="tabs">
-            <button class="tab active" data-tab="lobbyists">Lobbyists</button>
-            <button class="tab" data-tab="organizations">Organizations</button>
-            <button class="tab" data-tab="generate">Generate Forms</button>
-        </div>
+    <main class="container">
 
         <!-- Lobbyists Tab -->
         <div id="lobbyists-tab" class="tab-content active">
@@ -183,15 +264,15 @@
                 <div class="search-box" style="flex:1;margin-bottom:0;">
                     <input type="text" id="orgSearch" placeholder="Search saved organizations...">
                 </div>
-                <button type="button" id="searchCFBOrgsBtn" style="white-space:nowrap;">Search CFB Directory</button>
+                <button type="button" id="searchCFBOrgsBtn" class="secondary" style="white-space:nowrap;margin:0;">Search CFB Directory</button>
             </div>
-            <div id="cfbSearchHelp" style="display:none;background:#e8f4f8;border:1px solid #b8d4e3;padding:10px;border-radius:4px;margin-bottom:15px;font-size:0.9em;">
+            <div id="cfbSearchHelp" class="help-box" style="display:none;">
                 <strong>Finding an Organization's Entity ID:</strong><br>
                 1. On the CFB page, use the search box to find your organization<br>
                 2. Click on the organization name<br>
                 3. The Entity ID is in the URL (e.g., /lobbying-organizations/<strong>60</strong>/2025.1/)<br>
                 4. Enter that number in the Entity ID field below
-                <button type="button" onclick="document.getElementById('cfbSearchHelp').style.display='none'" style="float:right;padding:2px 8px;font-size:0.8em;">Dismiss</button>
+                <button type="button" class="secondary" onclick="document.getElementById('cfbSearchHelp').style.display='none'">Dismiss</button>
             </div>
             <h3>Add/Edit Organization</h3>
             <form id="orgForm">
@@ -206,7 +287,7 @@
                     </div>
                     <div class="form-group full"><label>Organization Name * (spell out acronyms)</label><input type="text" id="orgName" required></div>
                 </div>
-                <div id="cfbLookupHelp" style="display:none;background:#fff3cd;border:1px solid #ffc107;padding:10px;border-radius:4px;margin-bottom:15px;font-size:0.9em;">
+                <div id="cfbLookupHelp" class="help-box warn" style="display:none;">
                     <strong>Tip:</strong> Copy the organization details from the CFB page that opened. Look under "Association information" tab for address, phone, website, and contact details.
                 </div>
                 <div class="form-row">
@@ -239,7 +320,19 @@
 
         <!-- Generate Forms Tab -->
         <div id="generate-tab" class="tab-content">
-            <h2>Generate Registration Forms</h2>
+            <h2>Generate Forms</h2>
+            <div style="margin:-4px 0 18px;">
+                <div class="modes" id="modeSwitch" role="tablist" aria-label="Form type">
+                    <button type="button" data-mode="new" class="on">New Registration</button>
+                    <button type="button" data-mode="amendment">Amendment</button>
+                    <button type="button" data-mode="termination" class="term">Termination</button>
+                </div>
+            </div>
+            <div class="term-note">
+                <b>Termination statement.</b> Every lobbyist files their own, even if someone else reports for them.
+                If there was any lobbying activity since the last report, a Lobbyist Report (disbursement report) must go in with it.
+                Email to <a href="mailto:cf.board@state.mn.us">cf.board@state.mn.us</a>.
+            </div>
             <div id="generateStatus"></div>
 
             <div class="form-row">
@@ -252,21 +345,25 @@
                     <div id="selectedOrgDisplay"></div>
                     <input type="hidden" id="selectOrg">
                 </div>
-                <div class="form-group">
-                    <label>Registration Type</label>
-                    <select id="regType">
-                        <option value="new">New Registration</option>
-                        <option value="amendment">Amendment</option>
-                    </select>
+                <select id="regType" hidden>
+                    <option value="new">New Registration</option>
+                    <option value="amendment">Amendment</option>
+                    <option value="termination">Termination</option>
+                </select>
+                <div class="form-group term-only">
+                    <label>Date of Termination *</label>
+                    <input type="date" id="termDate">
+                    <small style="display:block;margin-top:4px;">Last day of lobbying for this organization</small>
                 </div>
                 <div class="form-group">
                     <label>Form Date</label>
                     <input type="date" id="formDate">
-                    <small style="color:#666;display:block;margin-top:4px;">Leave blank for today's date</small>
+                    <small style="display:block;margin-top:4px;">Date signed. Blank = today</small>
                 </div>
                 <div class="form-group">
                     <label>Signature</label>
                     <select id="signatureSelect">
+                        <option value="auto" selected>Each lobbyist's own</option>
                         <option value="">-- No Signature --</option>
                         <option value="alexiskisesig.jpg">Alexis Kise</option>
                         <option value="amykochsig.jpg">Amy Koch</option>
@@ -290,18 +387,25 @@
                 </div>
             </div>
 
-            <p style="color: #666; margin-bottom: 15px; font-size: 0.9em;">
-                Selected lobbyists appear below. Configure reporting and lobbying categories for each.
+            <p class="lede" style="margin-top:0;">
+                Selected lobbyists appear below. Set reporting status <span class="reg-only">and lobbying categories</span><span class="term-only">and lobbying activity</span> for each.
             </p>
             <div class="select-list" id="lobbyistSelectList">
                 <div class="empty">Search and select lobbyists above</div>
             </div>
-            <button class="success" id="generateBtn" style="margin-top: 20px; padding: 15px 30px; font-size: 1.1em;">
-                Generate PDF Forms
+            <button class="big" id="generateBtn" style="margin-top:20px;">
+                <span class="reg-only">Generate Registration PDFs</span><span class="term-only">Generate Termination PDFs</span>
             </button>
             <div class="generated-forms" id="generatedForms"></div>
         </div>
-    </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <span><b>Momentum Advocacy</b> · internal tool</span>
+            <span>Forms are filed with the <a href="https://cfb.mn.gov/" target="_blank" rel="noopener">Minnesota Campaign Finance Board</a>. Review every form before signing.</span>
+        </div>
+    </footer>
 
     <script>
         // ===== CONSTANTS =====
@@ -323,15 +427,15 @@
         const CFB_PDF_URL = 'https://cfb.mn.gov/pdf/forms/lobbyist/lob_registration.pdf';
         const DEFAULT_LOBBYISTS = [
             { id: '1', regNum: '6014', name: 'Nicholas Sandberg', email: 'nsandberg@momentum-advocacy.com', phone: '651-332-0903', employer: 'Momentum Advocacy', address1: '310 4th Ave S', address2: 'Ste 9200', city: 'Minneapolis', state: 'MN', zip: '55415' },
-            { id: '2', regNum: '3577', name: 'Amy Koch', email: 'akoch@momentum-advocacy.com', phone: '763-300-8492', employer: 'Momentum Advocacy', address1: '311 4th Ave S', address2: 'Ste 9201', city: 'Minneapolis', state: 'MN', zip: '55415' },
-            { id: '3', regNum: '4152', name: 'Natalia Madryga', email: 'nmadryga@momentum-advocacy.com', phone: '952-693-1329', employer: 'Momentum Advocacy', address1: '312 4th Ave S', address2: 'Ste 9202', city: 'Minneapolis', state: 'MN', zip: '55415' },
-            { id: '4', regNum: '4920', name: 'Isabella Rojas', email: 'irojas@momentum-advocacy.com', phone: '651-262-4922', employer: 'Momentum Advocacy', address1: '313 4th Ave S', address2: 'Ste 9203', city: 'Minneapolis', state: 'MN', zip: '55415' },
-            { id: '5', regNum: '5119', name: 'Will Waggoner', email: 'wwaggoner@momentum-advocacy.com', phone: '507-206-1711', employer: 'Momentum Advocacy', address1: '314 4th Ave S', address2: 'Ste 9204', city: 'Minneapolis', state: 'MN', zip: '55415' },
-            { id: '6', regNum: '1140', name: 'Brian R. McDaniel', email: 'bmcdaniel@momentum-advocacy.com', phone: '952-239-3612', employer: 'Momentum Advocacy', address1: '315 4th Ave S', address2: 'Ste 9205', city: 'Minneapolis', state: 'MN', zip: '55415' },
-            { id: '7', regNum: '5979', name: 'Alexis Kise', email: 'akise@momentum-advocacy.com', phone: '612-695-7715', employer: 'Momentum Advocacy', address1: '316 4th Ave S', address2: 'Ste 9206', city: 'Minneapolis', state: 'MN', zip: '55415' },
-            { id: '8', regNum: '4519', name: 'Alysen L. Nesse', email: 'alysen@momentum-advocacy.com', phone: '763-639-0226', employer: 'Momentum Advocacy', address1: '317 4th Ave S', address2: 'Ste 9207', city: 'Minneapolis', state: 'MN', zip: '55415' },
-            { id: '9', regNum: '1394', name: 'Michael A. Franklin', email: 'mfranklin@momentum-advocacy.com', phone: '218-879-5815', employer: 'Momentum Advocacy', address1: '318 4th Ave S', address2: 'Ste 9208', city: 'Minneapolis', state: 'MN', zip: '55415' },
-            { id: '10', regNum: '6015', name: 'Kayla Drake', email: 'kdrake@momentum-advocacy.com', phone: '314-448-8064', employer: 'Momentum Advocacy', address1: '319 4th Ave S', address2: 'Ste 9209', city: 'Minneapolis', state: 'MN', zip: '55415' }
+            { id: '2', regNum: '3577', name: 'Amy Koch', email: 'akoch@momentum-advocacy.com', phone: '763-300-8492', employer: 'Momentum Advocacy', address1: '310 4th Ave S', address2: 'Ste 9200', city: 'Minneapolis', state: 'MN', zip: '55415' },
+            { id: '3', regNum: '4152', name: 'Natalia Madryga', email: 'nmadryga@momentum-advocacy.com', phone: '952-693-1329', employer: 'Momentum Advocacy', address1: '310 4th Ave S', address2: 'Ste 9200', city: 'Minneapolis', state: 'MN', zip: '55415' },
+            { id: '4', regNum: '4920', name: 'Isabella Rojas', email: 'irojas@momentum-advocacy.com', phone: '651-262-4922', employer: 'Momentum Advocacy', address1: '310 4th Ave S', address2: 'Ste 9200', city: 'Minneapolis', state: 'MN', zip: '55415' },
+            { id: '5', regNum: '5119', name: 'Will Waggoner', email: 'wwaggoner@momentum-advocacy.com', phone: '507-206-1711', employer: 'Momentum Advocacy', address1: '310 4th Ave S', address2: 'Ste 9200', city: 'Minneapolis', state: 'MN', zip: '55415' },
+            { id: '6', regNum: '1140', name: 'Brian R. McDaniel', email: 'bmcdaniel@momentum-advocacy.com', phone: '952-239-3612', employer: 'Momentum Advocacy', address1: '310 4th Ave S', address2: 'Ste 9200', city: 'Minneapolis', state: 'MN', zip: '55415' },
+            { id: '7', regNum: '5979', name: 'Alexis Kise', email: 'akise@momentum-advocacy.com', phone: '612-695-7715', employer: 'Momentum Advocacy', address1: '310 4th Ave S', address2: 'Ste 9200', city: 'Minneapolis', state: 'MN', zip: '55415' },
+            { id: '8', regNum: '4519', name: 'Alysen L. Nesse', email: 'alysen@momentum-advocacy.com', phone: '763-639-0226', employer: 'Momentum Advocacy', address1: '310 4th Ave S', address2: 'Ste 9200', city: 'Minneapolis', state: 'MN', zip: '55415' },
+            { id: '9', regNum: '1394', name: 'Michael A. Franklin', email: 'mfranklin@momentum-advocacy.com', phone: '218-879-5815', employer: 'Momentum Advocacy', address1: '310 4th Ave S', address2: 'Ste 9200', city: 'Minneapolis', state: 'MN', zip: '55415' },
+            { id: '10', regNum: '6015', name: 'Kayla Drake', email: 'kdrake@momentum-advocacy.com', phone: '314-448-8064', employer: 'Momentum Advocacy', address1: '310 4th Ave S', address2: 'Ste 9200', city: 'Minneapolis', state: 'MN', zip: '55415' }
         ];
         
         const DEFAULT_ORGANIZATIONS = [
@@ -342,21 +446,21 @@
               {"id": "5", "entityId": "8400", "name": "Bitcoin Depot Operating LLC", "address": "2870 Peachtree Rd NW #327", "city": "Atlanta", "state": "GA", "zip": "30305", "phone": "(678) 671-6723", "website": "www.bitcoindepot.com", "contactName": "Ethan McClelland Director of Government Relations", "contactEmail": "ethan.mcclelland@bitcoindepot.com", "contactPhone": "202-423-5608", "officers": [], "categories": []},
               {"id": "6", "entityId": "6905", "name": "Blood Cancer United Inc.", "address": "10 G St NE Ste 400", "city": "Washington", "state": "DC", "zip": "20002", "phone": "(651) 293-1283", "website": "www.lls.org", "contactName": "Dana Bacon Director State Government Affairs", "contactEmail": "dana.bacon@bloodcancerunited.org", "contactPhone": "612-308-0479", "officers": [], "categories": []},
               {"id": "7", "entityId": "7352", "name": "Blue Ox Media Group", "address": "11443 ZACHARY LANE N", "city": "Maple Grove", "state": "MN", "zip": "55369", "phone": "(612) 382-2026", "website": "blueoxmediagroup.com", "contactName": "Tom McCarver CEO", "contactEmail": "tmccarver@blueoxmediagroup.com", "contactPhone": "612-382-2026", "officers": [], "categories": []},
-              {"id": "8", "entityId": "", "name": "Circular Action Alliance", "address": "", "city": "", "state": "MN", "zip": "", "phone": "", "website": "", "contactName": "", "contactEmail": "", "contactPhone": "", "officers": [], "categories": []},
+              {"id": "8", "entityId": "8828", "name": "Circular Action Alliance", "address": "", "city": "", "state": "MN", "zip": "", "phone": "", "website": "", "contactName": "", "contactEmail": "", "contactPhone": "", "officers": [], "categories": []},
               {"id": "9", "entityId": "7933", "name": "Carvana", "address": "930 W Rio Salado Pkwy", "city": "Tempe", "state": "AZ", "zip": "85281", "phone": "(573) 644-4262", "website": "www.carvana.com", "contactName": "Casey Garber Head of Government Affairs Midwest Region", "contactEmail": "casey.garber@carvana.com", "contactPhone": "(573) 644-4262", "officers": [], "categories": []},
               {"id": "10", "entityId": "1043", "name": "Catholic Charities of St Paul and Minneapolis", "address": "1007 E 14th St", "city": "Minneapolis", "state": "MN", "zip": "55404", "phone": "(612) 204-8500", "website": "www.cctwincities.org", "contactName": "Elizabeth Lyden VP of Engagement", "contactEmail": "elizabeth.lyden@cctwincities.org", "contactPhone": "651-757-7764", "officers": [], "categories": []},
               {"id": "11", "entityId": "8660", "name": "Channel One Food Bank", "address": "131 35th St. SE", "city": "Rochester", "state": "MN", "zip": "55904", "phone": "(507) 424-1721", "website": "helpingfeedpeople.org", "contactName": "Virginia Witherspoon Executive Director", "contactEmail": "virginiawitherspoon@channel-one.org", "contactPhone": "515-480-4453", "officers": [], "categories": []},
-              {"id": "12", "entityId": "", "name": "Brooklyn Park City of", "address": "5200 85th Ave N", "city": "Brooklyn Park", "state": "MN", "zip": "55443", "phone": "(763) 424-8002", "website": "www.brooklynpark.org", "contactName": "Jay Stroebel City Manager", "contactEmail": "jay.stroebel@brooklynpark.org", "contactPhone": "(763) 424-8002", "officers": [], "categories": []},
+              {"id": "12", "entityId": "3211", "name": "Brooklyn Park City of", "address": "5200 85th Ave N", "city": "Brooklyn Park", "state": "MN", "zip": "55443", "phone": "(763) 424-8002", "website": "www.brooklynpark.org", "contactName": "Jay Stroebel City Manager", "contactEmail": "jay.stroebel@brooklynpark.org", "contactPhone": "(763) 424-8002", "officers": [], "categories": []},
               {"id": "13", "entityId": "", "name": "Delano City of", "address": "", "city": "", "state": "MN", "zip": "", "phone": "", "website": "", "contactName": "", "contactEmail": "", "contactPhone": "", "officers": [], "categories": []},
               {"id": "14", "entityId": "6982", "name": "Grand Rapids City of", "address": "420 N Pokegama Ave", "city": "Grand Rapids", "state": "MN", "zip": "55744", "phone": "(218) 326-7626", "website": "www.cityofgrandrapidsmn.com", "contactName": "Tom Pagel City Administrator", "contactEmail": "tpagel@grandrapidsmn.gov", "contactPhone": "(218) 326-7626", "officers": [], "categories": []},
               {"id": "15", "entityId": "", "name": "Jordan City of", "address": "", "city": "", "state": "MN", "zip": "", "phone": "", "website": "", "contactName": "", "contactEmail": "", "contactPhone": "", "officers": [], "categories": []},
               {"id": "16", "entityId": "2256", "name": "Minneapolis City of", "address": "350 S 5th St", "city": "Minneapolis", "state": "MN", "zip": "55415", "phone": "(612) 364-4657", "website": "http://www.minneapolismn.gov/city-coordinator/igr.asp", "contactName": "Katie Topinka Director of Intergovernmental Relations", "contactEmail": "katie.topinka@minneapolismn.gov", "contactPhone": "(612) 364-4657", "officers": [], "categories": []},
               {"id": "17", "entityId": "3501", "name": "St Louis Park City of", "address": "4009 E Lake St", "city": "Minneapolis", "state": "MN", "zip": "55406", "phone": "(218) 428-0503", "website": "100percentmn.org", "contactName": "Clancy Ferris Legislative and Grants Analyst", "contactEmail": "cferris@stlouisparkmn.gov", "contactPhone": "(218) 428-0503", "officers": [], "categories": []},
               {"id": "18", "entityId": "8204", "name": "Wyoming City of", "address": "26885 Forest Blvd", "city": "Wyoming", "state": "MN", "zip": "55092", "phone": "(651) 462-0575", "website": "www.wyomingmn.org", "contactName": "Robb Linwood City Administrator", "contactEmail": "RLinwood@wyomingmn.org", "contactPhone": "612-232-5863", "officers": [], "categories": []},
-              {"id": "19", "entityId": "8450", "name": "Clare Housing Inc.", "address": "929 Central Ave NE", "city": "Minneapolis", "state": "MN", "zip": "55413", "phone": "(612) 236-9521", "website": "www.clarehousing.org", "contactName": "Pheobe Trepp Executive Director", "contactEmail": "phoebe.trepp@clarehousing.org", "contactPhone": "(612) 236-9521", "officers": [], "categories": []},
+              {"id": "19", "entityId": "5409", "name": "Clare Housing Inc.", "address": "929 Central Ave NE", "city": "Minneapolis", "state": "MN", "zip": "55413", "phone": "(612) 236-9521", "website": "www.clarehousing.org", "contactName": "Pheobe Trepp Executive Director", "contactEmail": "phoebe.trepp@clarehousing.org", "contactPhone": "(612) 236-9521", "officers": [], "categories": []},
               {"id": "20", "entityId": "6929", "name": "College Possible", "address": "755 Prior Ave N Ste 210", "city": "St Paul", "state": "MN", "zip": "55104", "phone": "(765) 277-2424", "website": "www.collegepossible.org", "contactName": "Dawn Schnitkey Senior Finance Director", "contactEmail": "", "contactPhone": "", "officers": [], "categories": []},
-              {"id": "21", "entityId": "8450", "name": "MN Conservative Energy Forum", "address": "200 Southdale Ctr", "city": "Edina", "state": "MN", "zip": "55435", "phone": "(507) 381-3671", "website": "http://www.mncef.com/", "contactName": "Rachel Stuckey Executive Director", "contactEmail": "rstuckey@mncef.com", "contactPhone": "507-381-3671", "officers": [], "categories": []},
-              {"id": "22", "entityId": "8450", "name": "COPAL (Comunidades organizando el poder y acción Latina)", "address": "3702 E Lake St", "city": "Minneapolis", "state": "MN", "zip": "55406", "phone": "(612) 806-1791", "website": "copalmn.org", "contactName": "Carolina Ortiz Associate Executive Director", "contactEmail": "cortiz@copalmn.org", "contactPhone": "(612) 806-1791", "officers": [], "categories": []},
+              {"id": "21", "entityId": "8594", "name": "MN Conservative Energy Forum", "address": "200 Southdale Ctr", "city": "Edina", "state": "MN", "zip": "55435", "phone": "(507) 381-3671", "website": "http://www.mncef.com/", "contactName": "Rachel Stuckey Executive Director", "contactEmail": "rstuckey@mncef.com", "contactPhone": "507-381-3671", "officers": [], "categories": []},
+              {"id": "22", "entityId": "7762", "name": "COPAL (Comunidades organizando el poder y acción Latina)", "address": "3702 E Lake St", "city": "Minneapolis", "state": "MN", "zip": "55406", "phone": "(612) 806-1791", "website": "copalmn.org", "contactName": "Carolina Ortiz Associate Executive Director", "contactEmail": "cortiz@copalmn.org", "contactPhone": "(612) 806-1791", "officers": [], "categories": []},
               {"id": "23", "entityId": "", "name": "Down Ballot - PA", "address": "", "city": "", "state": "MN", "zip": "", "phone": "", "website": "", "contactName": "", "contactEmail": "", "contactPhone": "", "officers": [], "categories": []},
               {"id": "24", "entityId": "", "name": "Education Partnership Coalition (United Way)", "address": "", "city": "", "state": "MN", "zip": "", "phone": "", "website": "", "contactName": "John Fanning", "contactEmail": "john.fanning@gtcuw.org", "contactPhone": "", "officers": [], "categories": []},
               {"id": "25", "entityId": "6930", "name": "Emerge Community Development", "address": "1834 Emerson Ave N", "city": "Minneapolis", "state": "MN", "zip": "55411", "phone": "(612) 669-6744", "website": "www.emerge-mn.org", "contactName": "Mike Wynne President CEO", "contactEmail": "WynneM@emerge-mn.org", "contactPhone": "612-669-6744", "officers": [], "categories": []},
@@ -702,14 +806,8 @@
 
         // ===== GENERATE TAB =====
         function populateOrgSelect() {
-            var select = document.getElementById('selectOrg');
-            var orgs = getOrganizations();
-            var html = '<option value="">-- Select Organization --</option>';
-            for (var i = 0; i < orgs.length; i++) {
-                html += '<option value="' + escapeHtml(orgs[i].id) + '">' + escapeHtml(orgs[i].name) + '</option>';
-            }
-            select.innerHTML = html;
-            renderLobbyistSelect();
+            // Org picking now happens through the search box on the Generate tab (#selectOrg is a hidden input),
+            // so there's no <select> to rebuild. Kept so existing callers don't break.
         }
 
         // ===== GENERATE TAB SEARCH FUNCTIONS =====
@@ -1017,7 +1115,7 @@
                 html += '<strong>' + displayName + '</strong><br>';
                 html += '<small>' + escapeHtml(l.email || '') + ' | ' + escapeHtml(l.phone || '') + '</small>';
                 html += '</div>';
-                html += '<button type="button" class="danger" data-remove-lobbyist="' + safeId + '" style="margin:0;padding:4px 10px;font-size:0.85em;">Remove</button>';
+                html += '<button type="button" class="danger" data-remove-lobbyist="' + safeId + '" style="margin:0;padding:5px 12px;font-size:12px;">Remove</button>';
                 html += '</div>';
 
                 html += '<div class="select-item-options visible" data-options-for="' + safeId + '">';
@@ -1026,8 +1124,10 @@
                 html += '<div class="reporting-section">';
                 html += '<label style="display:flex;align-items:center;gap:8px;cursor:pointer;">';
                 html += '<input type="checkbox" data-designated-lobbyist="' + safeId + '" style="width:18px;height:18px;">';
-                html += ' I am the association\'s designated lobbyist';
-                html += '</label></div>';
+                html += ' <span class="reg-only">I am the</span><span class="term-only">I was the</span> association\'s designated lobbyist';
+                html += '</label>';
+                html += '<label class="check-line term-only" style="margin-left:26px !important;"><input type="checkbox" data-term-entity-none="' + safeId + '"> (If designated) no lobbying efforts were made by the entity this reporting period</label>';
+                html += '</div>';
 
                 // Reporting status
                 html += '<div class="reporting-section">';
@@ -1036,7 +1136,16 @@
                 html += '<option value="self">Self-reporting</option>';
                 html += '<option value="authorizing">Authorizing another to report for me</option>';
                 html += '<option value="reporting">Reporting for others</option>';
-                html += '</select></div>';
+                html += '</select>';
+                // Termination: what goes in with the statement
+                html += '<div class="term-only" style="margin-top:10px;">';
+                html += '<span class="field-label">Lobbying activity since last report</span>';
+                html += '<label class="check-line"><input type="radio" name="termact-' + safeId + '" value="report" data-term-activity="' + safeId + '" checked> Yes, a Lobbyist Report is enclosed with this termination</label>';
+                html += '<label class="check-line"><input type="radio" name="termact-' + safeId + '" value="none" data-term-activity="' + safeId + '"> No lobbying efforts this reporting period</label>';
+                html += '<label class="check-line" data-term-includes-wrap="' + safeId + '" style="display:none;"><input type="checkbox" data-term-includes="' + safeId + '" checked> (Reporting for others) the enclosed report covers the lobbyists I report for</label>';
+                html += '<div class="help-text">If someone else reports for this lobbyist and there\'s no report enclosed, the form will say their activity is being reported by that lobbyist.</div>';
+                html += '</div>';
+                html += '</div>';
 
                 html += '<div class="reporting-section" data-auth-section="' + safeId + '" style="display:none;">';
                 html += '<label>Who will report for ' + escapeHtml(l.name) + '?</label>';
@@ -1057,7 +1166,7 @@
                 html += '</div>';
 
                 // Lobbying categories
-                html += buildCategoryTableHtml(safeId);
+                html += '<div class="reg-only">' + buildCategoryTableHtml(safeId) + '</div>';
 
                 html += '</div></div>';
             }
@@ -1118,7 +1227,11 @@
                 }
 
                 var categories = collectCategoriesForLobbyist(id);
-                selected.push({ id: id, reportingType: reportingType, isDesignatedLobbyist: isDesignatedLobbyist, authLobbyistId: authLobbyistId, reportingForIds: reportingForIds, categories: categories });
+                var actEl = document.querySelector('[data-term-activity="' + id + '"]:checked');
+                var inclEl = document.querySelector('[data-term-includes="' + id + '"]');
+                var entNoneEl = document.querySelector('[data-term-entity-none="' + id + '"]');
+                selected.push({ id: id, reportingType: reportingType, isDesignatedLobbyist: isDesignatedLobbyist, authLobbyistId: authLobbyistId, reportingForIds: reportingForIds, categories: categories,
+                    termActivity: actEl ? actEl.value : 'report', termIncludesOthers: inclEl ? inclEl.checked : true, termEntityNone: entNoneEl ? entNoneEl.checked : false });
             }
 
             if (selected.length === 0) {
@@ -1128,7 +1241,15 @@
 
             var org = getOrganizations().find(function(o) { return o.id === orgId; });
             var lobbyists = getLobbyists();
-            var isNew = document.getElementById('regType').value === 'new';
+            var mode = document.getElementById('regType').value;
+            var isNew = mode === 'new';
+            var isTermination = mode === 'termination';
+            var termDateInput = document.getElementById('termDate').value;
+            if (isTermination && !termDateInput) {
+                statusDiv.innerHTML = '<div class="status error">Enter the date of termination.</div>';
+                return;
+            }
+            var termDate = termDateInput ? new Date(termDateInput + 'T00:00:00') : null;
             var formDateInput = document.getElementById('formDate').value;
             var formDate = formDateInput ? new Date(formDateInput + 'T00:00:00') : new Date();
             var signatureFile = document.getElementById('signatureSelect').value;
@@ -1146,9 +1267,16 @@
                             return lobbyists.find(function(l) { return l.id === rid; });
                         }).filter(Boolean);
 
-                        var pdfBytes = await createCustomPDF(lobbyist, org, sel.reportingType, isNew, authLobbyist, reportingFor, sel.categories, sel.isDesignatedLobbyist, formDate, signatureFile);
+                        var sigFile = signatureFile === 'auto' ? signatureFor(lobbyist) : signatureFile;
+                        var pdfBytes;
+                        if (isTermination) {
+                            pdfBytes = await createTerminationPDF(lobbyist, org, sel, authLobbyist, reportingFor, termDate, formDate, sigFile);
+                        } else {
+                            pdfBytes = await createCustomPDF(lobbyist, org, sel.reportingType, isNew, authLobbyist, reportingFor, sel.categories, sel.isDesignatedLobbyist, formDate, sigFile);
+                        }
                         var fileName = sanitize(lobbyist.name).replace(/[^a-z0-9]/gi, '_') + '_' +
-                                        sanitize(org.name).replace(/[^a-z0-9]/gi, '_').substring(0,20) + '_Registration.pdf';
+                                        sanitize(org.name).replace(/[^a-z0-9]/gi, '_').substring(0,20) +
+                                        (isTermination ? '_Termination.pdf' : (isNew ? '_Registration.pdf' : '_Amendment.pdf'));
 
                         generatedPDFs.push({ bytes: pdfBytes, fileName: fileName, lobbyistName: lobbyist.name });
                     }
@@ -1212,6 +1340,212 @@
                 }
                 URL.revokeObjectURL(url);
             }, 2000);
+        }
+
+        // ===== FORM MODE (new / amendment / termination) =====
+        function setMode(mode) {
+            document.getElementById('regType').value = mode;
+            document.querySelectorAll('#modeSwitch [data-mode]').forEach(function(b) {
+                b.classList.toggle('on', b.getAttribute('data-mode') === mode);
+            });
+            document.body.classList.toggle('mode-termination', mode === 'termination');
+        }
+
+        // ===== SIGNATURES =====
+        // Each lobbyist's own signature file, keyed by CFB lobbyist registration #
+        var SIGNATURE_BY_REG = {
+            '6014': 'nicksandbergsig.jpg', '3577': 'amykochsig.jpg', '4152': 'nataliamadrygsig.jpg',
+            '4920': 'izzyrojassig.jpg', '5119': 'willwaggonersig.jpg', '1140': 'brianmcdanielsig.jpg',
+            '5979': 'alexiskisesig.jpg', '4519': 'alysennesnesig.jpg', '1394': 'mikefranklinig.jpg',
+            '6015': 'kayladrakesig.jpg'
+        };
+        function signatureFor(lobbyist) {
+            return SIGNATURE_BY_REG[String(lobbyist.regNum || '').trim()] || '';
+        }
+
+        async function embedSignature(pdfDoc, page, signatureFile, x, y) {
+            if (!signatureFile) return;
+            try {
+                var res = await fetch(SIGNATURE_BASE_URL + signatureFile);
+                if (!res.ok) return;
+                var img = await pdfDoc.embedJpg(await res.arrayBuffer());
+                var scale = Math.min(150 / img.width, 40 / img.height, 0.5);
+                page.drawImage(img, { x: x, y: y, width: img.width * scale, height: img.height * scale });
+            } catch (e) {
+                console.log('Could not load signature:', e);
+            }
+        }
+
+        // ===== ONE-TIME DATA FIXES (for browsers that already saved the old defaults) =====
+        function fixKnownDataErrors() {
+            // Entity IDs checked against the CFB Active Lobbyists export (11/2/26)
+            var orgFixes = [
+                { match: /^clare housing/i, entityId: '5409', bad: ['8450', ''] },
+                { match: /conservative energy/i, entityId: '8594', bad: ['8450', ''] },
+                { match: /^copal/i, entityId: '7762', bad: ['8450', ''] },
+                { match: /^circular action alliance/i, entityId: '8828', bad: [''] },
+                { match: /^brooklyn park/i, entityId: '3211', bad: [''] }
+            ];
+            var orgs = getOrganizations(), changed = false;
+            orgs.forEach(function(o) {
+                orgFixes.forEach(function(f) {
+                    if (f.match.test(o.name || '') && f.bad.indexOf(o.entityId || '') >= 0) { o.entityId = f.entityId; changed = true; }
+                });
+            });
+            if (changed) saveOrganizationsData(orgs);
+
+            // Lobbyist addresses were auto-incremented (311, 312... 4th Ave S / Ste 9201, 9202...).
+            // Everyone is at the Momentum office: 310 4th Ave S, Ste 9200.
+            var lobs = getLobbyists(), lchanged = false;
+            lobs.forEach(function(l) {
+                var m = /^3(1\d) 4th Ave S$/.exec(l.address1 || '');
+                if (m && m[1] !== '10' && /^Ste 92\d\d$/.test(l.address2 || '')) {
+                    l.address1 = '310 4th Ave S'; l.address2 = 'Ste 9200'; lchanged = true;
+                }
+            });
+            if (lchanged) saveLobbyistsData(lobs);
+        }
+
+        // ===== TERMINATION STATEMENT PDF =====
+        // Follows the CFB "Lobbyist Termination Statement" (cfb.mn.gov/pdf/forms/lobbyist/lob_termination_statement.pdf)
+        async function createTerminationPDF(lobbyist, org, sel, authLobbyist, reportingFor, termDate, formDate, signatureFile) {
+            var rgb = PDFLib.rgb;
+            var pdfDoc = await PDFLib.PDFDocument.create();
+            var font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
+            var bold = await pdfDoc.embedFont(PDFLib.StandardFonts.HelveticaBold);
+            var W = 612, H = 792, M = 50, CW = W - M * 2;
+            var navy = rgb(0, 0.2, 0.4), black = rgb(0, 0, 0), gray = rgb(0.3, 0.3, 0.3), light = rgb(0.85, 0.85, 0.85), white = rgb(1, 1, 1);
+            var page = pdfDoc.addPage([W, H]);
+            var y;
+
+            function newPageIfNeeded(space) {
+                if (y - space < 70) { page = pdfDoc.addPage([W, H]); y = H - M; }
+            }
+            function wrap(text, size, f, width) {
+                var words = sanitize(text).split(/\s+/), lines = [], line = '';
+                words.forEach(function(w) {
+                    var t = line ? line + ' ' + w : w;
+                    if ((f || font).widthOfTextAtSize(t, size) > width && line) { lines.push(line); line = w; } else { line = t; }
+                });
+                if (line) lines.push(line);
+                return lines;
+            }
+            function text(t, x, size, f, color) {
+                page.drawText(sanitize(t), { x: x, y: y, size: size || 10, font: f || font, color: color || black });
+            }
+            function section(title) {
+                newPageIfNeeded(50);
+                page.drawRectangle({ x: M, y: y - 5, width: CW, height: 20, color: navy });
+                page.drawText(title, { x: M + 10, y: y, size: 11, font: bold, color: white });
+                y -= 32;
+            }
+            function field(label, value, x, width) {
+                page.drawText(label, { x: x, y: y, size: 9, font: bold, color: gray });
+                page.drawText(sanitize(value || ''), { x: x, y: y - 14, size: 10, font: font, color: black });
+                page.drawLine({ start: { x: x, y: y - 17 }, end: { x: x + width, y: y - 17 }, thickness: 0.5, color: light });
+            }
+            function check(checked, label, indent) {
+                var x = M + (indent || 0);
+                var lines = wrap(label, 9.5, font, CW - (indent || 0) - 20);
+                newPageIfNeeded(lines.length * 13 + 6);
+                page.drawRectangle({ x: x, y: y - 2, width: 10, height: 10, borderColor: black, borderWidth: 1 });
+                if (checked) page.drawText('X', { x: x + 1.8, y: y - 0.5, size: 9, font: bold, color: black });
+                lines.forEach(function(l, i) { page.drawText(l, { x: x + 18, y: y - i * 13, size: 9.5, font: font, color: black }); });
+                y -= lines.length * 13 + 7;
+            }
+            function fmt(d) { return d ? d.toLocaleDateString('en-US') : ''; }
+
+            // Header
+            page.drawRectangle({ x: 0, y: H - 80, width: W, height: 80, color: navy });
+            page.drawText('Lobbyist Termination Statement', { x: M, y: H - 45, size: 20, font: bold, color: white });
+            page.drawText('Minnesota Campaign Finance and Public Disclosure Board', { x: M, y: H - 65, size: 11, font: font, color: white });
+            y = H - 108;
+            wrap('Every lobbyist must file their own termination statement, even if another lobbyist is authorized to report for them. If there was lobbying activity during the reporting period, a Lobbyist Report must accompany this statement.', 8.5, font, CW)
+                .forEach(function(l) { text(l, M, 8.5, font, gray); y -= 11; });
+            y -= 14;
+
+            // Lobbyist
+            section('LOBBYIST');
+            field('Name of lobbyist', lobbyist.name, M, 300);
+            field('Registration number', lobbyist.regNum, M + 330, CW - 330);
+            y -= 38;
+            field('Address', [lobbyist.address1 || lobbyist.address, lobbyist.address2].filter(Boolean).join(', '), M, CW);
+            y -= 38;
+            field('City, State, Zip', [lobbyist.city, [lobbyist.state, lobbyist.zip].filter(Boolean).join(' ')].filter(Boolean).join(', '), M, 300);
+            field('Telephone (daytime)', lobbyist.phone, M + 330, CW - 330);
+            y -= 44;
+
+            // Association
+            section('ASSOCIATION REPRESENTED');
+            field('Name of association, individual, political subdivision or public higher education system', org.name, M, 380);
+            field('Registration number', org.entityId, M + 400, CW - 400);
+            y -= 38;
+            field('Date of termination', fmt(termDate), M, 200);
+            y -= 44;
+
+            // Designated lobbyist
+            section('DESIGNATED LOBBYIST');
+            check(sel.isDesignatedLobbyist, 'I was the designated lobbyist for this association.');
+            check(sel.isDesignatedLobbyist && sel.termEntityNone, 'No lobbying efforts were made by the entity I lobbied for during this reporting period.', 20);
+            y -= 8;
+
+            // Reporting status (complete one of three)
+            section('LOBBYIST REPORTING STATUS  (complete one)');
+            var rt = sel.reportingType, act = sel.termActivity;
+
+            text('1. Self-reporting lobbyist', M, 10, bold, navy); y -= 16;
+            check(rt === 'self' && act === 'report', 'I was a self-reporting lobbyist and I have enclosed a Lobbyist Report covering the period from my last report through the date of termination.', 10);
+            check(rt === 'self' && act === 'none', 'No lobbying efforts were made by me during this reporting period.', 10);
+            y -= 6;
+
+            text('2. My lobbying activity was reported by another lobbyist', M, 10, bold, navy); y -= 16;
+            check(rt === 'authorizing' && act === 'report', 'I have included a Lobbyist Report disclosing my lobbying activity for the period from the last report through the date of termination.', 10);
+            check(rt === 'authorizing' && act === 'none', 'My lobbying activity for the current reporting period is being reported by:', 10);
+            field('Name of lobbyist', rt === 'authorizing' && authLobbyist ? authLobbyist.name : '', M + 28, 280);
+            field('Lobbyist registration #', rt === 'authorizing' && authLobbyist ? authLobbyist.regNum : '', M + 330, CW - 330);
+            y -= 34;
+
+            newPageIfNeeded(260);
+            text('3. I was the reporting lobbyist for other lobbyists', M, 10, bold, navy); y -= 16;
+            var isRep = rt === 'reporting';
+            check(isRep, 'I was the reporting lobbyist for:', 10);
+            // table of up to 10 lobbyists
+            newPageIfNeeded(20 + 10 * 15);
+            page.drawText('Name of lobbyist(s) I reported for', { x: M + 28, y: y, size: 8.5, font: bold, color: gray });
+            page.drawText('Lobbyist reg. #', { x: M + 360, y: y, size: 8.5, font: bold, color: gray });
+            y -= 14;
+            var others = isRep ? (reportingFor || []) : [];
+            for (var i = 0; i < Math.max(4, Math.min(10, others.length)); i++) {
+                var o = others[i];
+                if (o) {
+                    page.drawText(sanitize(o.name), { x: M + 28, y: y, size: 9.5, font: font, color: black });
+                    page.drawText(sanitize(o.regNum || ''), { x: M + 360, y: y, size: 9.5, font: font, color: black });
+                }
+                page.drawLine({ start: { x: M + 28, y: y - 4 }, end: { x: M + CW, y: y - 4 }, thickness: 0.5, color: light });
+                y -= 15;
+            }
+            y -= 6;
+            check(isRep && act === 'none', 'No lobbying efforts were made by me or the lobbyist(s) I am authorized to report for during this reporting period.', 10);
+            check(isRep && act === 'report', 'I have included a Lobbyist Report disclosing my lobbying activity for the period from the last report through the date of termination.', 10);
+            check(isRep && act === 'report' && sel.termIncludesOthers, 'The enclosed Lobbyist Report includes the lobbying activity for the lobbyist(s) I am authorized to report for.', 26);
+            check(isRep && act === 'report' && !sel.termIncludesOthers, 'The enclosed Lobbyist Report does not include the lobbying activity for the lobbyist(s) I am authorized to report for.', 26);
+            y -= 6;
+
+            // Certification
+            section('CERTIFICATION');
+            newPageIfNeeded(110);
+            text('I, ' + lobbyist.name + ', certify that this report is complete, true, and correct.', M, 10); y -= 52;
+            await embedSignature(pdfDoc, page, signatureFile, M + 70, y);
+            text('Signature: _______________________________', M, 10);
+            text('Date: ' + fmt(formDate), M + 320, 10);
+            y -= 26;
+            wrap('Knowingly providing false information or knowingly omitting required information may result in a civil penalty of up to $3,000 and criminal prosecution for a gross misdemeanor.', 8, font, CW)
+                .forEach(function(l) { text(l, M, 8, font, gray); y -= 10; });
+
+            pdfDoc.getPages().forEach(function(p) {
+                p.drawText('Minnesota Campaign Finance Board · 190 Centennial Office Building, 658 Cedar St, St Paul, MN 55155 · cf.board@state.mn.us', { x: M, y: 25, size: 7.5, font: font, color: gray });
+            });
+            return await pdfDoc.save();
         }
 
         async function createCustomPDF(lobbyist, org, reportingType, isNew, authLobbyist, reportingFor, categories, isDesignatedLobbyist, formDate, signatureFile) {
@@ -1769,6 +2103,9 @@
                 if (authSection) authSection.style.display = 'none';
                 if (reportingSection) reportingSection.style.display = 'none';
 
+                var inclWrap = document.querySelector('[data-term-includes-wrap="' + id + '"]');
+                if (inclWrap) inclWrap.style.display = value === 'reporting' ? 'flex' : 'none';
+
                 if (value === 'authorizing' && authSection) {
                     authSection.style.display = 'block';
                 } else if (value === 'reporting' && reportingSection) {
@@ -1818,6 +2155,13 @@
 
             // Login form handler
             document.getElementById('loginForm').addEventListener('submit', handleLogin);
+
+            // Form type switch (New / Amendment / Termination)
+            document.querySelectorAll('#modeSwitch [data-mode]').forEach(function(btn) {
+                btn.addEventListener('click', function() { setMode(btn.getAttribute('data-mode')); });
+            });
+            setMode('new');
+            fixKnownDataErrors();
 
             renderLobbyists();
             renderOrganizations();
@@ -1882,7 +2226,6 @@
             });
 
             // Org select
-            document.getElementById('selectOrg').addEventListener('change', renderLobbyistSelect);
         });
     </script>
 </body>
