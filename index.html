@@ -201,61 +201,55 @@
         .qp-filed{background:var(--ok-soft);border-color:#c3dfcc;color:var(--ok);padding-right:6px}
         .qp-skip{opacity:.6;text-decoration:line-through}
         .qp-generated{background:var(--gold-soft);border-color:#f1d98a}
-        /* ===== Trophy collection (To file + Lobbyists) ===== */
-        .tab-content.case{background:radial-gradient(ellipse 90% 60% at 50% -8%,#1f5694 0%,#0a3d70 35%,#00284d 70%,#001a33 100%);border-color:#0b3c6b;color:var(--cream);box-shadow:0 10px 30px rgba(0,26,51,.25)}
+        /* ===== Collection view (To file + Lobbyists): rotating spheres ===== */
+        .tab-content.case{background:linear-gradient(180deg,#0a3d70 0%,#00325d 38%,#002a50 100%);border-color:#0b3c6b;color:var(--cream)}
         .case h2{color:var(--gold-soft)}
         .case .lede,.case .count,.case .empty{color:#a9b7c9}
         .case .editor{color:var(--ink)}
         .case .list-head > button{background:var(--gold);border-color:var(--gold);color:var(--navy)}
         .case .list-head > button:hover{background:#ffc52a;box-shadow:none}
-        .case .list-head .search-box input{background:rgba(255,255,255,.95)}
-        .shelf-head{display:flex;align-items:center;gap:12px;margin:26px 0 4px}
-        .plate{background:linear-gradient(180deg,#f7dc82,#d9a516 55%,#b88a0c);color:var(--navy);font-weight:800;font-size:11px;letter-spacing:.12em;text-transform:uppercase;padding:5px 14px;border-radius:4px;box-shadow:0 1px 0 rgba(255,255,255,.5) inset,0 2px 6px rgba(0,0,0,.35)}
+        .shelf-head{display:flex;align-items:baseline;gap:12px;margin:28px 0 2px;padding-top:18px;border-top:1px solid rgba(255,255,255,.1)}
+        .plate{font-weight:800;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
         .shelf-count{font-size:12px;font-weight:600;color:#a9b7c9}
-        .shelf-note{font-size:12.5px;color:#8fa2ba;margin:4px 0 6px}
-        .shelf{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:6px 8px;padding:6px 0 18px;
-            background:linear-gradient(180deg,transparent calc(100% - 3px),rgba(238,179,16,.35) calc(100% - 3px),rgba(238,179,16,.1))}
+        .shelf-note{font-size:12.5px;color:#8fa2ba;margin:2px 0 8px}
+        .shelf{display:grid;grid-template-columns:repeat(auto-fill,minmax(124px,1fr));gap:4px 8px;padding:4px 0 6px}
 
-        .trophy{--size:76px;--spin:9s;display:flex;flex-direction:column;align-items:center;gap:6px;margin:0;padding:12px 6px 10px;border:1px solid transparent;border-radius:14px;background:none;color:var(--cream);font:inherit;cursor:pointer;box-shadow:none;transition:background .2s,border-color .2s}
+        .trophy{--size:66px;--spin:16s;display:flex;flex-direction:column;align-items:center;gap:8px;margin:0;padding:14px 6px 12px;border:1px solid transparent;border-radius:12px;background:none;color:var(--cream);font:inherit;cursor:pointer;box-shadow:none;transition:background .15s,border-color .15s}
         .trophy:hover{background:rgba(255,255,255,.05);box-shadow:none}
-        .trophy.sel{background:rgba(238,179,16,.12);border-color:rgba(238,179,16,.55)}
+        .trophy.sel{background:rgba(255,255,255,.07);border-color:rgba(238,179,16,.6)}
         .trophy:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
-        .t-stage{position:relative;width:var(--size);height:calc(var(--size) * 1.3);perspective:640px;display:flex;justify-content:center;transition:transform .25s ease}
-        .trophy:hover .t-stage{transform:translateY(-4px) scale(1.07)}
-        .t-float{display:block;transform-style:preserve-3d;animation:t-bob 3.4s ease-in-out var(--d,0s) infinite alternate}
-        .t-spin{display:block;position:relative;width:var(--size);height:var(--size);transform-style:preserve-3d;animation:t-spin var(--spin) linear var(--d,0s) infinite}
-        .t-face{position:absolute;inset:0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;letter-spacing:-.02em;font-size:calc(var(--size) * .27);backface-visibility:hidden;-webkit-backface-visibility:hidden}
-        .t-front{transform:translateZ(3px)}
-        .t-back{transform:rotateY(180deg) translateZ(3px);font-size:calc(var(--size) * .2)}
-        .t-mid{transform:scale(.97);backface-visibility:visible}
-        .t-pedestal{position:absolute;bottom:2px;left:12%;width:76%;height:12px;border-radius:50%;background:radial-gradient(ellipse at center,rgba(0,0,0,.55),rgba(0,0,0,0) 70%);animation:t-shadow 3.4s ease-in-out var(--d,0s) infinite alternate}
+        .t-stage{position:relative;display:block;width:var(--size);height:calc(var(--size) + 10px)}
+        /* the ball: base color + its own shading; the label layer turns inside it like print on a globe */
+        .t-ball{position:absolute;top:0;left:0;width:var(--size);height:var(--size);border-radius:50%;overflow:hidden;perspective:calc(var(--size) * 3);background:var(--ball)}
+        .t-spin{position:absolute;inset:0;transform-style:preserve-3d;animation:t-spin var(--spin) linear var(--d,0s) infinite}
+        .t-face{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:800;letter-spacing:-.02em;color:var(--ink-on);font-size:calc(var(--size) * .27);backface-visibility:hidden;-webkit-backface-visibility:hidden}
+        .t-front{transform:translateZ(calc(var(--size) * .38))}
+        .t-back{transform:rotateY(180deg) translateZ(calc(var(--size) * .38));font-size:calc(var(--size) * .22)}
+        /* shading sits on top and never moves, so the silhouette stays a sphere */
+        .t-gloss{position:absolute;inset:0;border-radius:50%;pointer-events:none;
+            background:radial-gradient(circle at 32% 26%,rgba(255,255,255,.75) 0,rgba(255,255,255,.18) 18%,rgba(255,255,255,0) 38%),
+                       radial-gradient(circle at 50% 50%,rgba(0,0,0,0) 52%,rgba(0,0,0,.28) 78%,rgba(0,0,0,.5) 100%);
+            box-shadow:inset 0 -4px 10px rgba(0,0,0,.25)}
+        .t-pedestal{position:absolute;bottom:0;left:18%;width:64%;height:8px;border-radius:50%;background:radial-gradient(ellipse at center,rgba(0,0,0,.45),rgba(0,0,0,0) 70%)}
         .t-name{font-size:12.5px;font-weight:700;line-height:1.25;text-align:center;max-width:100%;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-        .t-sub{font-size:11px;font-weight:700;color:var(--gold);display:flex;align-items:center;gap:5px}
+        .t-sub{font-size:11px;font-weight:600;color:#c9d3e0;display:flex;align-items:center;gap:5px}
         .warn-dot{width:7px;height:7px;border-radius:50%;background:#ffb020}
 
-        .t-gold .t-front,.t-gold .t-back{background:radial-gradient(circle at 35% 28%,#fff6cf 0%,#f6cf4f 30%,#eeb310 55%,#a37400 100%);color:var(--navy);box-shadow:inset 0 0 0 3px rgba(255,255,255,.35),inset 0 -6px 12px rgba(80,50,0,.35)}
-        .t-gold .t-mid{background:#9a6b00}
-        .t-silver .t-front,.t-silver .t-back{background:radial-gradient(circle at 35% 28%,#ffffff 0%,#e3e8ee 32%,#b9c3cf 58%,#6f7b89 100%);color:var(--navy);box-shadow:inset 0 0 0 3px rgba(255,255,255,.5),inset 0 -6px 12px rgba(0,0,0,.25)}
-        .t-silver .t-mid{background:#6a7480}
-        .t-bronze .t-front,.t-bronze .t-back{background:radial-gradient(circle at 35% 28%,#f6d6b5 0%,#d28d50 35%,#a0602a 62%,#5e3412 100%);color:#fff4e6;box-shadow:inset 0 0 0 3px rgba(255,255,255,.25),inset 0 -6px 12px rgba(0,0,0,.3)}
-        .t-bronze .t-mid{background:#5e3412}
-        .trophy.t-bronze{opacity:.72}
-        .t-navy .t-front,.t-navy .t-back{background:radial-gradient(circle at 35% 28%,#5d8cc6 0%,#1d5799 30%,#00325d 62%,#001a33 100%);color:var(--gold);box-shadow:inset 0 0 0 3px var(--gold),inset 0 0 0 5px rgba(255,255,255,.15),inset 0 -6px 12px rgba(0,0,0,.4)}
-        .t-navy .t-mid{background:#b88a0c}
+        .t-gold{--ball:radial-gradient(circle at 40% 35%,#f8d870,#e3a90e 55%,#9a6b00);--ink-on:#00325d}
+        .t-silver{--ball:radial-gradient(circle at 40% 35%,#f1f4f8,#b8c2ce 55%,#6c7887);--ink-on:#00325d}
+        .t-bronze{--ball:radial-gradient(circle at 40% 35%,#e0b48a,#a96a34 55%,#5e3412);--ink-on:#fff4e6}
+        .t-navy{--ball:radial-gradient(circle at 40% 35%,#3f73b3,#0d4a8a 55%,#001f3d);--ink-on:#f7d36a}
+        .trophy.t-bronze{opacity:.7}
 
         @keyframes t-spin{from{transform:rotateY(0)}to{transform:rotateY(360deg)}}
-        @keyframes t-bob{from{transform:translateY(0)}to{transform:translateY(-9px)}}
-        @keyframes t-shadow{from{transform:scale(1);opacity:.95}to{transform:scale(.78);opacity:.55}}
-        .trophy.off .t-spin,.trophy.off .t-float,.trophy.off .t-pedestal{animation-play-state:paused}
+        .trophy.off .t-spin{animation-play-state:paused}
 
-        /* showcase: big spinning trophy under a spotlight + Melee-style description box */
-        .showcase{display:grid;grid-template-columns:230px 1fr;gap:18px;align-items:stretch;margin:4px 0 6px}
-        .sc-stage{position:relative;display:flex;align-items:flex-end;justify-content:center;border-radius:16px;padding-bottom:6px;
-            background:radial-gradient(ellipse 60% 85% at 50% 0%,rgba(255,240,190,.38) 0%,rgba(255,240,190,.08) 55%,transparent 75%),
-                       radial-gradient(ellipse 55% 14% at 50% 92%,rgba(238,179,16,.35),transparent 70%)}
-        .trophy.big{--size:132px;--spin:6s;pointer-events:none;padding-bottom:4px}
+        /* showcase */
+        .showcase{display:grid;grid-template-columns:200px 1fr;gap:18px;align-items:center;margin:4px 0 8px}
+        .sc-stage{display:flex;justify-content:center}
+        .trophy.big{--size:128px;--spin:12s;pointer-events:none;padding:8px 0}
         .trophy.big .t-name,.trophy.big .t-sub{display:none}
-        .sc-box{background:linear-gradient(180deg,rgba(0,24,52,.88),rgba(0,14,32,.94));border:2px solid var(--gold);border-radius:14px;padding:16px 20px 18px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08),0 12px 30px rgba(0,0,0,.35)}
+        .sc-box{background:rgba(0,18,40,.55);border:1px solid rgba(238,179,16,.55);border-radius:12px;padding:16px 20px 18px}
         .sc-kicker{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--gold)}
         .sc-box h3.sc-title{border:0;padding:0;margin:4px 0 8px;color:var(--cream);font-size:20px}
         .sc-desc{color:#c9d3e0;font-size:13px;margin:0 0 10px}
@@ -264,12 +258,11 @@
         @media (max-width:640px){
             .showcase{grid-template-columns:1fr}
             .trophy.big{--size:104px}
-            .shelf{grid-template-columns:repeat(auto-fill,minmax(104px,1fr))}
-            .trophy{--size:64px}
+            .shelf{grid-template-columns:repeat(auto-fill,minmax(100px,1fr))}
+            .trophy{--size:58px}
         }
         @media (prefers-reduced-motion:reduce){
-            .t-spin,.t-float,.t-pedestal{animation:none}
-            .t-spin{transform:rotateY(-18deg)}
+            .t-spin{animation:none}
         }
         footer{background:var(--navy);color:#c9d3e0;font-size:12px;border-top:3px solid var(--gold)}
         footer .container{padding-top:20px;padding-bottom:26px;display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-between}
@@ -489,7 +482,7 @@
                         <option value="auto" selected>Each lobbyist's own</option>
                         <option value="">-- No Signature --</option>
                         <option value="alexiskisesig.jpg">Alexis Kise</option>
-                        <option value="amykochsig.jpg">Amy Koch</option>
+                        <option value="amykochsig.jpg">Amy Frederiksen</option>
                         <option value="izzyrojassig.jpg">Izzy Rojas</option>
                         <option value="brianmcdanielsig.jpg">Brian McDaniel</option>
                         <option value="nataliamadrygsig.jpg">Natalia Madryga</option>
@@ -753,8 +746,8 @@
             var me = DB.lobbyists.find(function(l) { return currentUser && (l.email || '').toLowerCase() === currentUser.email.toLowerCase(); });
             return me ? me.id : null;
         }
-        // ===== TROPHY GALLERY (Melee-style collection) =====
-        // Pure CSS 3D: animations only touch transform/opacity (GPU-composited, no layout work).
+        // ===== COLLECTION VIEW (rotating spheres) =====
+        // Pure CSS 3D: the only animation is a transform on the label layer (GPU-composited, no layout work).
         // Off-screen trophies pause via IntersectionObserver; prefers-reduced-motion stops motion entirely.
         var trophyObserver = ('IntersectionObserver' in window) ? new IntersectionObserver(function(entries) {
             entries.forEach(function(e) { e.target.classList.toggle('off', !e.isIntersecting); });
@@ -777,14 +770,13 @@
         }
         // One coin. kind: gold | silver | bronze | navy
         function trophyHtml(opts) {
-            var delay = (opts.i || 0) * -0.73;  // stagger so they don't spin in lockstep
+            var delay = (opts.i || 0) * -1.37;  // stagger so they don't spin in lockstep
             return '<button type="button" class="trophy t-' + opts.kind + (opts.selected ? ' sel' : '') + '"' + opts.attr +
                 ' style="--d:' + delay.toFixed(2) + 's" aria-label="' + escapeHtml(opts.label) + '">' +
-                '<span class="t-stage"><span class="t-float"><span class="t-spin">' +
+                '<span class="t-stage"><span class="t-ball"><span class="t-spin">' +
                 '<span class="t-face t-front">' + escapeHtml(opts.front) + '</span>' +
-                '<span class="t-face t-mid"></span>' +
                 '<span class="t-face t-back">' + escapeHtml(opts.back) + '</span>' +
-                '</span></span><span class="t-pedestal"></span></span>' +
+                '</span><span class="t-gloss"></span></span><span class="t-pedestal"></span></span>' +
                 '<span class="t-name">' + escapeHtml(opts.label) + '</span>' +
                 (opts.sub ? '<span class="t-sub">' + opts.sub + '</span>' : '') +
                 '</button>';
