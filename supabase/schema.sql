@@ -4,12 +4,12 @@
 
 -- ---------- helpers ----------
 create or replace function public.is_momentum()
-returns boolean language sql stable as $$
+returns boolean language sql stable set search_path = '' as $$
   select coalesce((auth.jwt() ->> 'email') ilike '%@momentum-advocacy.com', false)
 $$;
 
 create or replace function public.touch_updated_at()
-returns trigger language plpgsql as $$
+returns trigger language plpgsql set search_path = '' as $$
 begin new.updated_at = now(); return new; end $$;
 
 -- ---------- lobbyists ----------
@@ -89,9 +89,12 @@ create table public.filings (
   updated_at  timestamptz not null default now(),
   unique (lobbyist_id, org_id, action, status)
 );
+create index on public.staffing (lobbyist_id);
+create index on public.filings (org_id);
+create index on public.filings (lobbyist_id);
 
 -- ---------- gap engine: what needs filing right now ----------
-create or replace view public.registration_gaps as
+create or replace view public.registration_gaps with (security_invoker = true) as
 -- staffed but not registered
 select s.lobbyist_id, s.org_id, 'registration'::text as action,
        'Staffed on roster, not registered with CFB' as reason
@@ -123,18 +126,18 @@ alter table public.cfb_registrations enable row level security;
 alter table public.sync_runs         enable row level security;
 alter table public.filings           enable row level security;
 
-create policy momentum_all on public.lobbyists     for all using (is_momentum()) with check (is_momentum());
-create policy momentum_all on public.organizations for all using (is_momentum()) with check (is_momentum());
-create policy momentum_all on public.staffing      for all using (is_momentum()) with check (is_momentum());
-create policy momentum_all on public.filings       for all using (is_momentum()) with check (is_momentum());
+create policy momentum_all on public.lobbyists     for all using ((select public.is_momentum())) with check ((select public.is_momentum()));
+create policy momentum_all on public.organizations for all using ((select public.is_momentum())) with check ((select public.is_momentum()));
+create policy momentum_all on public.staffing      for all using ((select public.is_momentum())) with check ((select public.is_momentum()));
+create policy momentum_all on public.filings       for all using ((select public.is_momentum())) with check ((select public.is_momentum()));
 -- CFB snapshot + sync log are written only by the server (service role); staff can read
-create policy momentum_read on public.cfb_registrations for select using (is_momentum());
-create policy momentum_read on public.sync_runs         for select using (is_momentum());
+create policy momentum_read on public.cfb_registrations for select using ((select public.is_momentum()));
+create policy momentum_read on public.sync_runs         for select using ((select public.is_momentum()));
 
 -- ---------- private storage for signatures ----------
 insert into storage.buckets (id, name, public) values ('signatures', 'signatures', false)
 on conflict (id) do nothing;
 create policy momentum_sig_read on storage.objects for select
-  using (bucket_id = 'signatures' and is_momentum());
+  using (bucket_id = 'signatures' and (select public.is_momentum()));
 create policy momentum_sig_write on storage.objects for insert
-  with check (bucket_id = 'signatures' and is_momentum());
+  with check (bucket_id = 'signatures' and (select public.is_momentum()));

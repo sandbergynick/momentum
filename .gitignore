@@ -1,0 +1,2 @@
+# Seed data has client contact info: keep it out of this public repo
+supabase/seed.sql
