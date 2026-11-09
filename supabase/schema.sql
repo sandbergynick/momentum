@@ -104,14 +104,14 @@ join public.organizations o on o.id = s.org_id
 where not exists (select 1 from public.cfb_registrations r
                   where r.lobbyist_reg = l.reg_num and r.entity_id = o.entity_id)
 union
--- registered but no longer staffed
+-- registered for an org nobody on the roster is staffed on: likely ended, needs termination
 select l.id, o.id, 'termination',
-       'Registered with CFB, not on roster'
+       'Registered with CFB, client not on roster'
 from public.cfb_registrations r
 join public.lobbyists l on l.reg_num = r.lobbyist_reg
 join public.organizations o on o.entity_id = r.entity_id
 where r.last_seen = (select max(last_seen) from public.cfb_registrations)
-  and not exists (select 1 from public.staffing s where s.lobbyist_id = l.id and s.org_id = o.id);
+  and not exists (select 1 from public.staffing s where s.org_id = o.id);
 
 -- ---------- triggers ----------
 create trigger t_lobbyists_upd before update on public.lobbyists for each row execute function public.touch_updated_at();
